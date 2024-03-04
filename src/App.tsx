@@ -78,7 +78,7 @@ const App: Component = () => {
             outputValues[i] = value;
             return outputValues;
         });
-        if (event.target.value.length > 1) {
+        if (event.target.value.length != 0) {
             shiftFocus();
         }
     };
