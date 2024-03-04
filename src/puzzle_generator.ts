@@ -1,4 +1,5 @@
 import {ArrowSets} from './arrow_sets';
+import {DICTIONARY} from './dictionary';
 import {Random} from './random';
 
 function hash(input: string): string {
@@ -16,6 +17,43 @@ function hash(input: string): string {
     return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(16, '0');
 }
 
+function shuffle<T>(array: T[], random: Random) {
+    for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(random() * (i + 1));
+        if (i !== j) {
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+}
+
+function backtrack(clues: string[], arrows: ArrowSets, random: Random, answer: string[]): boolean {
+    if (clues.length === Object.keys(arrows).length) {
+        return true;
+    }
+    let source = clues.length;
+    let targets = arrows[source];
+    let origAnswer = targets.map(i => answer[i]).join('');
+    let pattern = new RegExp(origAnswer);
+    let options = Object.entries(DICTIONARY).filter(([word, category]) => {
+        return !clues.includes(category) && pattern.test(word);
+    });
+    shuffle(options, random);
+    for (let [word, category] of options) {
+        clues.push(category);
+        for (let i = 0; i < word.length; i++) {
+            answer[targets[i]] = word[i];
+        }
+        if (backtrack(clues, arrows, random, answer)) {
+            return true;
+        }
+        clues.pop();
+    }
+    for (let i = 0; i < origAnswer.length; i++) {
+        answer[targets[i]] = origAnswer[i];
+    }
+    return false;
+}
+
 export function generatePuzzle(arrows: ArrowSets, random: Random): [string[], number, string] {
     const uniqueOutputs = new Set<number>();
     for (const source in arrows) {
@@ -23,7 +61,15 @@ export function generatePuzzle(arrows: ArrowSets, random: Random): [string[], nu
             uniqueOutputs.add(destination);
         }
     }
-    return [[], uniqueOutputs.size, hash('')];
+    let clues: string[] = [], answer = Array.from(uniqueOutputs).sort().map(_ => '.');
+    if (!backtrack(clues, arrows, random, answer)) {
+        console.log(arrows, clues, answer);
+        throw new Error('Failed to generate puzzle');
+    }
+    if (answer.includes('.')) {
+        throw new Error('Failed to fill in all outputs');
+    }
+    return [clues, uniqueOutputs.size, hash(answer.join('').toUpperCase())];
 }
 
 function isSubset<T>(a: Iterable<T>, b: Set<T>): boolean {
