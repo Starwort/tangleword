@@ -72,13 +72,15 @@ const App: Component = () => {
     const makeInputEventHandler = (i: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
         let value = event.target.value;
         if (value.length > 1) {
-            value = value[-1];
+            value = value[value.length - 1];
         }
         setOutputValues(outputValues => {
             outputValues[i] = value;
             return outputValues;
         });
-        shiftFocus();
+        if (event.target.value.length > 1) {
+            shiftFocus();
+        }
     };
     for (let i = 0; i < outputCount; i++) {
         let input: Element = <input
