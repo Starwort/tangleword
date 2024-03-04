@@ -19,5 +19,5 @@ export default defineConfig({
   build: {
     target: 'esnext',
   },
-  base: '/pcp-word-puzzle/'
+  base: '/tangleword/'
 });
