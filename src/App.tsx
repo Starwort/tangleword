@@ -44,15 +44,13 @@ const App: Component = () => {
         const next = inputs[thisInput + by];
         next?.focus();
     };
-    const makeKeyEventHandler = (i: number) => (event: KeyboardEvent) => {
-        event.preventDefault();
+    const makeKeyEventHandler = (i: number): JSX.EventHandler<HTMLInputElement, KeyboardEvent> => (event) => {
         if (event.key === 'Unidentified') return; // doesn't work on mobile
         if (event.isComposing || event.keyCode === 229) return;
         if (event.key === 'Backspace') {
-            setOutputValues(outputValues => {
-                outputValues[i] = '';
-                return outputValues;
-            });
+            if ((event.target as HTMLInputElement).value.length === 0) {
+                shiftFocus(-1);
+            }
             return;
         }
         if (event.key === 'Left' || event.key === 'ArrowLeft') {
@@ -62,12 +60,6 @@ const App: Component = () => {
             shiftFocus();
             return;
         }
-        if (!'abcdefghijklmnopqrstuvwxyz'.includes(event.key.toLowerCase())) return;
-        setOutputValues(outputValues => {
-            outputValues[i] = event.key.toUpperCase();
-            return outputValues;
-        });
-        shiftFocus();
     };
     const makeInputEventHandler = (i: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
         let value = event.target.value;
@@ -85,7 +77,8 @@ const App: Component = () => {
     for (let i = 0; i < outputCount; i++) {
         let input: Element = <input
             value={outputValues()[i]}
-            onKeyUp={makeKeyEventHandler(i)}
+            onKeyDown={makeKeyEventHandler(i)}
+            onInput={makeInputEventHandler(i)}
         /> as any;
         outputs.push(input);
     }
@@ -95,7 +88,7 @@ const App: Component = () => {
         let element = <div class="row">
             {targets.map(i => <input
                 value={outputValues()[i]}
-                onKeyUp={makeKeyEventHandler(i)}
+                onKeyDown={makeKeyEventHandler(i)}
                 onInput={makeInputEventHandler(i)}
             />)}
             <div class="clue">
