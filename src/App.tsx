@@ -15,6 +15,8 @@ const App: Component = () => {
     const query = new URLSearchParams(window.location.search);
     const [error, setError] = createSignal('');
     let arrows: ArrowSets, clues: string[], outputCount, answerHash: string;
+    const randomSeed = Math.floor(new Date() as any / 8.64e7);
+    const random = makeRandom(randomSeed);
     if (query.has('puzzle')) {
         try {
             [arrows, clues, outputCount, answerHash] = puzzleFromString(
@@ -23,12 +25,10 @@ const App: Component = () => {
         } catch (_error) {
             let error: Error = _error as any;
             setError(error.message);
-            const random = makeRandom(0);
             arrows = generateArrowSets(random);
             [clues, outputCount, answerHash] = generatePuzzle(arrows, random);
         }
     } else {
-        const random = makeRandom(0);
         arrows = generateArrowSets(random);
         [clues, outputCount, answerHash] = generatePuzzle(arrows, random);
     }
