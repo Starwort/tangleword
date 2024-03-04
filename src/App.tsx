@@ -67,7 +67,7 @@ const App: Component = () => {
             value = value[value.length - 1];
         }
         setOutputValues(outputValues => {
-            outputValues[i] = value;
+            outputValues[i] = value.toUpperCase();
             return outputValues;
         });
         if (event.target.value.length != 0) {
