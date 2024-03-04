@@ -1,4 +1,4 @@
-import {Show, createEffect, createSignal, type Component} from 'solid-js';
+import {JSX, Show, createEffect, createSignal, type Component} from 'solid-js';
 
 import {Share} from '@suid/icons-material';
 import {Alert, AppBar, CssBaseline, IconButton, ThemeProvider, Toolbar, Typography, createTheme} from '@suid/material';
@@ -36,8 +36,18 @@ const App: Component = () => {
         Array.from({length: outputCount}).map(_ => ''), {equals: false}
     );
     const outputs: Element[] = [];
-    const makeEventHandler = (i: number) => (event: KeyboardEvent) => {
+    const shiftFocus = (by = 1) => {
+        const inputs = tabbable(document.documentElement);
+        const thisInput = inputs.findIndex(
+            (e) => e === document.activeElement,
+        );
+        const next = inputs[thisInput + by];
+        next?.focus();
+    };
+    const makeKeyEventHandler = (i: number) => (event: KeyboardEvent) => {
         event.preventDefault();
+        if (event.key === 'Unidentified') return; // doesn't work on mobile
+        if (event.isComposing || event.keyCode === 229) return;
         if (event.key === 'Backspace') {
             setOutputValues(outputValues => {
                 outputValues[i] = '';
@@ -46,21 +56,10 @@ const App: Component = () => {
             return;
         }
         if (event.key === 'Left' || event.key === 'ArrowLeft') {
-            const inputs = tabbable(document.documentElement);
-            const thisInput = inputs.findIndex(
-                (e) => e === document.activeElement,
-            );
-            const prev = inputs[thisInput - 1];
-            prev?.focus();
+            shiftFocus(-1);
             return;
-        }
-        if (event.key === 'Right' || event.key === 'ArrowRight') {
-            const inputs = tabbable(document.documentElement);
-            const thisInput = inputs.findIndex(
-                (e) => e === document.activeElement,
-            );
-            const next = inputs[thisInput + 1];
-            next?.focus();
+        } else if (event.key === 'Right' || event.key === 'ArrowRight') {
+            shiftFocus();
             return;
         }
         if (!'abcdefghijklmnopqrstuvwxyz'.includes(event.key.toLowerCase())) return;
@@ -68,22 +67,35 @@ const App: Component = () => {
             outputValues[i] = event.key.toUpperCase();
             return outputValues;
         });
-        const inputs = tabbable(document.documentElement);
-        const thisInput = inputs.findIndex(
-            (e) => e === document.activeElement,
-        );
-        const next = inputs[thisInput + 1];
-        next?.focus();
+        shiftFocus();
+    };
+    const makeInputEventHandler = (i: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
+        let value = event.target.value;
+        if (value.length > 1) {
+            value = value[-1];
+        }
+        setOutputValues(outputValues => {
+            outputValues[i] = value;
+            return outputValues;
+        });
+        shiftFocus();
     };
     for (let i = 0; i < outputCount; i++) {
-        let input: Element = <input value={outputValues()[i]} onKeyUp={makeEventHandler(i)}></input> as any;
+        let input: Element = <input
+            value={outputValues()[i]}
+            onKeyUp={makeKeyEventHandler(i)}
+        /> as any;
         outputs.push(input);
     }
     const inputs: Element[] = [];
     for (let i = 0; i < Object.keys(arrows).length; i++) {
         let targets = arrows[i];
         let element = <div class="row">
-            {targets.map(i => <input value={outputValues()[i]} onKeyUp={makeEventHandler(i)}></input>)}
+            {targets.map(i => <input
+                value={outputValues()[i]}
+                onKeyUp={makeKeyEventHandler(i)}
+                onInput={makeInputEventHandler(i)}
+            />)}
             <div class="clue">
                 {clues[i]}
             </div>
@@ -136,6 +148,7 @@ const App: Component = () => {
                         ));
                         navigator.clipboard.writeText(decodeURIComponent(url.href));
                     }}
+                    title="Share this puzzle"
                 >
                     <Share />
                 </IconButton>
