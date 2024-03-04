@@ -1,7 +1,7 @@
 import {JSX, Show, createEffect, createSignal, type Component} from 'solid-js';
 
 import {Share} from '@suid/icons-material';
-import {Alert, AppBar, CssBaseline, IconButton, ThemeProvider, Toolbar, Typography, createTheme} from '@suid/material';
+import {Alert, AppBar, Box, CssBaseline, IconButton, ThemeProvider, Toolbar, Typography, createTheme} from '@suid/material';
 import LeaderLine from 'leader-line-new';
 import {tabbable} from 'tabbable';
 import AboutButton from './AboutButton';
@@ -85,15 +85,23 @@ const App: Component = () => {
     const inputs: Element[] = [];
     for (let i = 0; i < Object.keys(arrows).length; i++) {
         let targets = arrows[i];
-        let element = <div class="row">
-            {targets.map(i => <input
-                value={outputValues()[i]}
-                onKeyDown={makeKeyEventHandler(i)}
-                onInput={makeInputEventHandler(i)}
-            />)}
-            <div class="clue">
-                {clues[i]}
-            </div>
+        let element = <div>
+            <Box sx={{
+                display: 'flex',
+                flexDirection: {xs: 'column', md: 'row-reverse'},
+                alignItems: 'center',
+            }}>
+                <div class="clue">
+                    {clues[i]}
+                </div>
+                <div class="row">
+                    {targets.map(i => <input
+                        value={outputValues()[i]}
+                        onKeyDown={makeKeyEventHandler(i)}
+                        onInput={makeInputEventHandler(i)}
+                    />)}
+                </div>
+            </Box>
         </div>;
         inputs.push(element as any);
     }
@@ -111,7 +119,13 @@ const App: Component = () => {
             for (let target of targets) {
                 lines.push(new LeaderLine(
                     inputs[i], outputs[target],
-                    {path: 'straight', endPlug: 'arrow3', color: COLOURS[i % COLOURS.length]}
+                    {
+                        path: 'straight',
+                        endPlug: 'arrow3',
+                        color: COLOURS[i % COLOURS.length],
+                        startSocket: 'right',
+                        endSocket: 'left',
+                    }
                 ));
             }
         }
