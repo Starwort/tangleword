@@ -1,7 +1,7 @@
 import {JSX, Show, createEffect, createSignal, type Component} from 'solid-js';
 
 import {Share} from '@suid/icons-material';
-import {Alert, AppBar, Box, CssBaseline, IconButton, ThemeProvider, Toolbar, Typography, createTheme} from '@suid/material';
+import {Alert, AppBar, Box, CssBaseline, IconButton, ThemeProvider, Toolbar, Typography, createTheme, useMediaQuery} from '@suid/material';
 import LeaderLine from 'leader-line-new';
 import {tabbable} from 'tabbable';
 import AboutButton from './AboutButton';
@@ -105,6 +105,7 @@ const App: Component = () => {
         </div>;
         inputs.push(element as any);
     }
+    const theme = createTheme({palette: {mode: 'dark'}});
     createEffect((oldLines: LeaderLine[]) => {
         for (let line of oldLines) {
             line.hide();
@@ -114,11 +115,16 @@ const App: Component = () => {
         let _: any = won();
         _ = error();
         const lines = [];
+        const isLarge = useMediaQuery(theme.breakpoints.up('md'));
         for (let i = 0; i < Object.keys(arrows).length; i++) {
             let targets = arrows[i];
             for (let target of targets) {
+                let source = inputs[i];
+                if (!isLarge()) {
+                    source = source.querySelector('.row')!;
+                }
                 lines.push(new LeaderLine(
-                    inputs[i], outputs[target],
+                    source, outputs[target],
                     {
                         path: 'straight',
                         endPlug: 'arrow3',
@@ -138,7 +144,7 @@ const App: Component = () => {
         }
     });
 
-    return <ThemeProvider theme={createTheme({palette: {mode: 'dark'}})}>
+    return <ThemeProvider theme={theme}>
         <CssBaseline />
         <AppBar>
             <Toolbar>
