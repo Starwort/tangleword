@@ -14,7 +14,7 @@ export default function App() {
     const query = new URLSearchParams(window.location.search);
     const [error, setError] = createSignal('');
     let arrows: ArrowSets, clues: string[], outputCount, answerHash: string;
-    let randomSeed;
+    let randomSeed: number;
     if (query.has('seed')) {
         randomSeed = parseInt(query.get('seed')!);
         if (isNaN(randomSeed)) {
