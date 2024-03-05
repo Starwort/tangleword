@@ -136,12 +136,12 @@ export function PuzzleView(props: PuzzleViewProps) {
         }
         return inputs;
     });
+    const theme = useTheme();
     createEffect((oldLines: LeaderLine[]) => {
         for (let line of oldLines) {
             line.hide();
             line.remove();
         }
-        const theme = useTheme();
         // subscribe to the signals that draw banners
         let _: any = won();
         _ = props.error;
@@ -214,7 +214,9 @@ export function PuzzleView(props: PuzzleViewProps) {
                                         onInput={makeInputInputEventHandler(clueIdx, letter)}
                                         style={{color: output(letter) == '!' ? 'red' : undefined}} />
                                 </> : <>
-                                    <input disabled />
+                                    <input disabled style={{
+                                        "background-color": theme.palette.mode == 'dark' ? 'transparent' : 'black'
+                                    }} />
                                 </>
                         ))}
                     </div>
