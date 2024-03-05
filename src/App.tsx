@@ -14,13 +14,24 @@ export default function App() {
     const query = new URLSearchParams(window.location.search);
     const [error, setError] = createSignal('');
     let arrows: ArrowSets, clues: string[], outputCount, answerHash: string;
-    const randomSeed = Math.floor(new Date() as any / 8.64e7);
+    let randomSeed;
+    if (query.has('seed')) {
+        randomSeed = parseInt(query.get('seed')!);
+        if (isNaN(randomSeed)) {
+            setError('Invalid seed');
+            randomSeed = Math.floor(new Date() as any / 8.64e7);
+        }
+    } else {
+        randomSeed = Math.floor(new Date() as any / 8.64e7);
+    }
     const random = makeRandom(randomSeed);
+    let generatedFromSeed = true;
     if (query.has('puzzle')) {
         try {
             [arrows, clues, outputCount, answerHash] = puzzleFromString(
                 query.get('puzzle')!
             );
+            generatedFromSeed = false;
         } catch (_error) {
             let error: Error = _error as any;
             setError(error.message);
@@ -48,9 +59,14 @@ export default function App() {
                     color='inherit'
                     onClick={() => {
                         const urlObj = new URL(window.location.href);
-                        urlObj.searchParams.set('puzzle', serialise(
-                            arrows, clues, answerHash
-                        ));
+                        urlObj.search = '';
+                        if (generatedFromSeed) {
+                            urlObj.searchParams.set('seed', randomSeed.toString());
+                        } else {
+                            urlObj.searchParams.set('puzzle', serialise(
+                                arrows, clues, answerHash
+                            ));
+                        }
                         let url = decodeURIComponent(urlObj.href);
                         if (
                             'share' in navigator
