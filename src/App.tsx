@@ -1,7 +1,7 @@
-import {Show, createSignal} from 'solid-js';
+import {Show, createEffect, createMemo, createSignal} from 'solid-js';
 
-import {InfoOutlined, Share} from '@suid/icons-material';
-import {Alert, AppBar, CssBaseline, IconButton, SvgIcon, ThemeProvider, Toolbar, Typography, createTheme} from '@suid/material';
+import {DarkMode, InfoOutlined, LightMode, Share} from '@suid/icons-material';
+import {Alert, AppBar, CssBaseline, IconButton, SvgIcon, ThemeProvider, Toolbar, Typography, createPalette, createTheme} from '@suid/material';
 import {SvgIconProps} from '@suid/material/SvgIcon';
 import './App.scss';
 import LinkButton from './LinkButton';
@@ -42,7 +42,24 @@ export default function App() {
         arrows = generateArrowSets(random);
         [clues, outputCount, answerHash] = generatePuzzle(arrows, random);
     }
-    const theme = createTheme({palette: {mode: 'dark'}});
+    const [themeColour, setThemeColour] = createSignal<'dark' | 'light'>(
+        window.localStorage.theme === 'light' ? 'light' : 'dark'
+    );
+    createEffect(() => {
+        window.localStorage.theme = themeColour();
+    });
+    const palette = createMemo(() =>
+        createPalette({
+            mode: themeColour(),
+            primary: {
+                main: themeColour() == 'dark' ? '#bb86fc' : '#6200ee',
+            },
+            secondary: {
+                main: '#03dac6',
+            },
+        })
+    );
+    const theme = createTheme({palette});
     return <ThemeProvider theme={theme}>
         <CssBaseline />
         <AppBar>
@@ -52,6 +69,15 @@ export default function App() {
                 }}>
                     Tangleword
                 </Typography>
+                <IconButton
+                    color='inherit'
+                    onClick={() => {
+                        setThemeColour(themeColour => themeColour == 'dark' ? 'light' : 'dark');
+                    }}>
+                    <Show when={themeColour() == 'dark'} fallback={<DarkMode />}>
+                        <LightMode />
+                    </Show>
+                </IconButton>
                 <LinkButton href="https://www.theguardian.com/science/2024/mar/03/can-you-solve-it-the-word-game-at-the-cutting-edge-of-computer-science">
                     <InfoOutlined />
                 </LinkButton>

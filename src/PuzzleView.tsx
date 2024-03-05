@@ -81,7 +81,6 @@ export function PuzzleView(props: PuzzleViewProps) {
     };
     const makeOutputInputEventHandler = (i: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
         let value = event.target.value;
-        console.log(value);
         if (value.length > 1) {
             value = value[value.length - 1];
         }
@@ -90,7 +89,6 @@ export function PuzzleView(props: PuzzleViewProps) {
         }
         setInputValues(inputValues => {
             for (let j = 0; j < props.clues.length; j++) {
-                console.log(i);
                 inputValues[i][j] = value.toUpperCase();
             }
             return inputValues;
@@ -138,20 +136,20 @@ export function PuzzleView(props: PuzzleViewProps) {
         }
         return inputs;
     });
-    const theme = useTheme();
     createEffect((oldLines: LeaderLine[]) => {
         for (let line of oldLines) {
             line.hide();
             line.remove();
         }
+        const theme = useTheme();
         // subscribe to the signals that draw banners
         let _: any = won();
         _ = props.error;
-        const lines: LeaderLine[] = [];
         const isLarge = useMediaQuery(theme.breakpoints.up('md'));
         const inputBoxes = inputs();
         const outputBoxes = outputs();
-        console.log(inputBoxes, outputBoxes);
+        let lines: LeaderLine[] = [];
+        let colours = COLOURS[theme.palette.mode];
         for (let i = 0; i < Object.keys(props.arrows).length; i++) {
             let targets = props.arrows[i];
             for (let target of targets) {
@@ -159,16 +157,16 @@ export function PuzzleView(props: PuzzleViewProps) {
                 if (!isLarge()) {
                     source = source.querySelector('.row')!;
                 }
-                lines.push(new LeaderLine(
+                setTimeout(() => lines.push(new LeaderLine(
                     source, outputBoxes[target],
                     {
                         path: 'straight',
                         endPlug: 'arrow3',
-                        color: COLOURS[i % COLOURS.length],
+                        color: colours[i % colours.length],
                         startSocket: 'right',
                         endSocket: 'left',
                     }
-                ));
+                )), 1);
             }
         }
         return lines;
