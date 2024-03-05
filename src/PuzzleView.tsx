@@ -181,6 +181,7 @@ export function PuzzleView(props: PuzzleViewProps) {
         }
     });
 
+    const shouldTransform = useMediaQuery(theme.breakpoints.up('md'));
     return <>
         <Show when={won()}>
             <Alert severity="success">You won!</Alert>
@@ -194,7 +195,9 @@ export function PuzzleView(props: PuzzleViewProps) {
                 {outputs()}
             </div>
         </div>
-        <div class="alt-puzzle-view">
+        <div class="alt-puzzle-view" style={{
+            transform: shouldTransform() ? undefined : 'scale(0.75)',
+        }}>
             <div class="column">
                 {props.clues.map(clue => <div class="clue">
                     {clue}

@@ -15,7 +15,8 @@ input {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-grow: 1;
+    flex: 1;
+    text-align: center;
 }
 
 .row {
