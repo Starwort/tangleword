@@ -1,12 +1,11 @@
-import {Show, createEffect, createMemo, createSignal} from 'solid-js';
+import {JSX, Show, createEffect, createMemo, createSignal} from 'solid-js';
 
-import {DarkMode, InfoOutlined, LightMode, Share} from '@suid/icons-material';
-import {Alert, AppBar, CssBaseline, IconButton, SvgIcon, ThemeProvider, Toolbar, Typography, createPalette, createTheme} from '@suid/material';
-import {SvgIconProps} from '@suid/material/SvgIcon';
+import {BarChart, DarkMode, InfoOutlined, LightMode, Share} from '@suid/icons-material';
+import {Alert, AppBar, Box, Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Link, ThemeProvider, Toolbar, Typography, createPalette, createTheme} from '@suid/material';
 import './App.scss';
-import LinkButton from './LinkButton';
 import {PuzzleView} from './PuzzleView';
 import {ArrowSets, generateArrowSets} from './arrow_sets';
+import {GitHub, KofiIcon as Kofi} from './extra_icons';
 import {generatePuzzle, puzzleFromString, serialise} from './puzzle_generator';
 import {makeRandom} from './random';
 
@@ -16,6 +15,14 @@ function loadNumFromStorage(key: string, defaultValue: number): number {
         value = defaultValue;
     }
     return value;
+}
+
+function LinkButton(props: {href: string; title: string; children?: JSX.Element;}) {
+    // @ts-ignore - this works but the types seem to be wrong
+    return <IconButton
+        color='inherit'
+        target='_blank'
+        {...props} />;
 }
 
 export default function App() {
@@ -45,6 +52,9 @@ export default function App() {
     createEffect(() => {
         window.localStorage.dailyStreak = dailyStreak().toString();
     });
+    const [errorModalOpen, setErrorModalOpen] = createSignal(false);
+    const [statisticModalOpen, setStatisticModalOpen] = createSignal(false);
+    const [infoModalOpen, setInfoModalOpen] = createSignal(false);
     let arrows: ArrowSets, clues: string[], outputCount, answerHash: string;
     let randomSeed: number;
     let isDaily = true;
@@ -90,6 +100,67 @@ export default function App() {
     const theme = createTheme({palette});
     return <ThemeProvider theme={theme}>
         <CssBaseline />
+        <Dialog open={errorModalOpen()} onClose={() => setErrorModalOpen(false)}>
+            <DialogTitle>An error has occurred</DialogTitle>
+            <DialogContent>
+                <Typography>{error()}</Typography>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={() => setErrorModalOpen(false)}>Ok</Button>
+            </DialogActions>
+        </Dialog>
+        <Dialog open={statisticModalOpen()} onClose={() => setStatisticModalOpen(false)}>
+            <DialogTitle>Statistics</DialogTitle>
+            <DialogContent>
+                <Typography>
+                    Daily puzzles completed: {dailiesSolved()}
+                </Typography>
+                <Typography>
+                    Longest daily puzzle streak: {dailyStreak()}
+                </Typography>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={() => setStatisticModalOpen(false)}>Close</Button>
+            </DialogActions>
+        </Dialog>
+        <Dialog open={infoModalOpen()} onClose={() => setInfoModalOpen(false)}>
+            <DialogTitle>About</DialogTitle>
+            <DialogContent>
+                <Typography>
+                    Tangleword is a word puzzle game, where several crossword-style clues
+                    each point to a vertical column. The answer to each clue is a three-letter
+                    word, made up of the three letters that the clue points to.
+                </Typography>
+                <br />
+                <Typography>
+                    The game is won when all the letters on the right-hand side of the
+                    screen are filled in correctly, without causing any conflicts.
+                </Typography>
+                <br />
+                <Typography>
+                    For convenience, an additional view is provided that shows the
+                    letters in a grid. This may be easier to read for some people.
+                </Typography>
+                <br />
+                <Typography>
+                    This implementation of Tangleword, including the name 'Tangleword',
+                    was created by Starwort, based on the game described in <Link
+                        href="https://www.theguardian.com/science/2024/mar/03/can-you-solve-it-the-word-game-at-the-cutting-edge-of-computer-science"
+                    >Alex Bellos' Guardian article</Link>.
+                </Typography>
+                <Box sx={{display: 'flex', justifyContent: 'center', gap: 2, paddingTop: 2}}>
+                    <Button href="https://ko-fi.com/starwort" startIcon={<Kofi />} variant='contained'>
+                        Support me on Ko-fi
+                    </Button>
+                    <Button href="https://github.com/Starwort/tangleword/" startIcon={<GitHub />} variant='contained'>
+                        View source on GitHub
+                    </Button>
+                </Box>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={() => setInfoModalOpen(false)}>Close</Button>
+            </DialogActions>
+        </Dialog>
         <AppBar>
             <Toolbar sx={{gap: 1}}>
                 <Typography variant='h5' component='h1' sx={{
@@ -101,14 +172,19 @@ export default function App() {
                     color='inherit'
                     onClick={() => {
                         setThemeColour(themeColour => themeColour == 'dark' ? 'light' : 'dark');
-                    }}>
+                    }}
+                    title={themeColour() == 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
                     <Show when={themeColour() == 'dark'} fallback={<DarkMode />}>
                         <LightMode />
                     </Show>
                 </IconButton>
-                <LinkButton href="https://www.theguardian.com/science/2024/mar/03/can-you-solve-it-the-word-game-at-the-cutting-edge-of-computer-science">
+                <IconButton onClick={() => setInfoModalOpen(true)} title="About">
                     <InfoOutlined />
-                </LinkButton>
+                </IconButton>
+                <IconButton onClick={() => setStatisticModalOpen(true)} title="Statistics">
+                    <BarChart />
+                </IconButton>
                 <IconButton
                     color='inherit'
                     onClick={() => {
@@ -135,7 +211,7 @@ export default function App() {
                 >
                     <Share />
                 </IconButton>
-                <LinkButton href="https://github.com/Starwort/tangleword">
+                <LinkButton href="https://github.com/Starwort/tangleword" title="View on GitHub">
                     <GitHub />
                 </LinkButton>
             </Toolbar>
@@ -161,6 +237,7 @@ export default function App() {
                         } else {
                             setDailyStreak(1);
                         }
+                        setStatisticModalOpen(true);
                     }
                 }}
             />
@@ -168,8 +245,4 @@ export default function App() {
     </ThemeProvider>;
 }
 
-function GitHub(props: SvgIconProps) {
-    return <SvgIcon {...props}>
-        <path d="M12 1.27a11 11 0 00-3.48 21.46c.55.09.73-.28.73-.55v-1.84c-3.03.64-3.67-1.46-3.67-1.46-.55-1.29-1.28-1.65-1.28-1.65-.92-.65.1-.65.1-.65 1.1 0 1.73 1.1 1.73 1.1.92 1.65 2.57 1.2 3.21.92a2 2 0 01.64-1.47c-2.47-.27-5.04-1.19-5.04-5.5 0-1.1.46-2.1 1.2-2.84a3.76 3.76 0 010-2.93s.91-.28 3.11 1.1c1.8-.49 3.7-.49 5.5 0 2.1-1.38 3.02-1.1 3.02-1.1a3.76 3.76 0 010 2.93c.83.74 1.2 1.74 1.2 2.94 0 4.21-2.57 5.13-5.04 5.4.45.37.82.92.82 2.02v3.03c0 .27.1.64.73.55A11 11 0 0012 1.27" />,
-    </SvgIcon>;
-}
+
