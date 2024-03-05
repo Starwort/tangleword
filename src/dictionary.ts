@@ -12,9 +12,9 @@ const PRONOUN = 'pronoun';
 const LOCATION = 'place';
 const ADJECTIVE = 'adjective';
 const CLOTHES = 'clothing';
-const MALE_NAME = 'Male name';
+const MALE_NAME = 'male name';
 const HELP = 'assistance';
-const FEMALE_NAME = 'Female name';
+const FEMALE_NAME = 'female name';
 const INSECT = 'insect';
 const ANIMAL_NOISE = 'animal noise';
 const OBJECT = 'object';
@@ -32,11 +32,10 @@ const MOUNTAIN = 'mountain';
 const BOAT = 'boat';
 const SNAKE = 'snake';
 const GEOGRAPHICAL_FEATURE = 'geographical feature';
-const STAIN = 'stain';
 const TIME = 'time';
 const UNIT = 'unit';
 const NAME = 'name';
-const GREEK_LETTER = 'Greek letters';
+const GREEK_LETTER = 'Greek letter';
 const GOVT_AGENCY = 'government agency';
 const LETTER = 'letter';
 const AFFIRMATIVE = 'affirmative';
@@ -162,7 +161,7 @@ export const DICTIONARY: Record<string, string> = {
     'dos': COMPUTER_TERM,
     'dox': VERB,
     'dug': VERB,
-    'dye': STAIN,
+    'dye': COLOUR,
     'ear': BODY_PART,
     'eat': VERB,
     'eel': FISH,
@@ -246,16 +245,17 @@ export const DICTIONARY: Record<string, string> = {
     'hog': ANIMAL,
     'hop': VERB,
     'hub': LOCATION,
-    'hue': STAIN,
+    'hue': COLOUR,
     'hug': VERB,
     'huh': EXCLAMATION,
     'hum': VERB,
     'hut': LOCATION,
+    'ice': FOOD,
     'ick': EXCLAMATION,
     'icy': ADJECTIVE,
     'ill': ILLNESS,
     'imp': CREATURE,
-    'ink': STAIN,
+    'ink': COLOUR,
     'inn': LOCATION,
     'ios': COMPUTER_TERM,
     'ire': EMOTION,
@@ -309,6 +309,8 @@ export const DICTIONARY: Record<string, string> = {
     'mil': UNIT,
     'mix': VERB,
     'mmm': EXCLAMATION,
+    'moa': BIRD,
+    'mog': ANIMAL,
     'mom': PARENT,
     'moo': ANIMAL_NOISE,
     'mop': TOOL,
