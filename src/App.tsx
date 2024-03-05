@@ -33,9 +33,17 @@ const App: Component = () => {
         arrows = generateArrowSets(random);
         [clues, outputCount, answerHash] = generatePuzzle(arrows, random);
     }
-    const [outputValues, setOutputValues] = createSignal<string[]>(
-        Array.from({length: outputCount}).map(_ => ''), {equals: false}
+    const [inputValues, setInputValues] = createSignal<string[][]>(
+        Array.from({length: outputCount}, _ => Array.from({length: clues.length}, _ => '')), {equals: false}
     );
+    const output = (i: number) => {
+        let values = inputValues()[i].filter(v => v !== '');
+        let unique = new Set(values);
+        if (unique.size > 1) {
+            return '!';
+        }
+        return values[0] ?? '';
+    };
     const outputs: Element[] = [];
     const shiftFocus = (by = 1) => {
         const inputs = tabbable(document.documentElement);
@@ -62,30 +70,54 @@ const App: Component = () => {
             return;
         }
     };
-    const makeInputEventHandler = (i: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
+    const makeInputInputEventHandler = (clue: number, letter: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
         let value = event.target.value;
         if (value.length > 1) {
             value = value[value.length - 1];
         }
-        setOutputValues(outputValues => {
-            outputValues[i] = value.toUpperCase();
-            return outputValues;
+        if (!/^[a-zA-Z]$/.test(value)) {
+            value = '';
+        }
+        setInputValues(inputValues => {
+            inputValues[letter][clue] = value.toUpperCase();
+            return inputValues;
         });
-        if (event.target.value.length != 0) {
+        if (value.length != 0) {
             shiftFocus();
         }
     };
-    for (let i = 0; i < outputCount; i++) {
+    const makeOutputInputEventHandler = (i: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
+        let value = event.target.value;
+        console.log(value);
+        if (value.length > 1) {
+            value = value[value.length - 1];
+        }
+        if (!/^[a-zA-Z]$/.test(value)) {
+            value = '';
+        }
+        setInputValues(inputValues => {
+            for (let j = 0; j < clues.length; j++) {
+                console.log(i);
+                inputValues[i][j] = value.toUpperCase();
+            }
+            return inputValues;
+        });
+        if (value.length != 0) {
+            shiftFocus();
+        }
+    };
+    for (let letter = 0; letter < outputCount; letter++) {
         let input: Element = <input
-            value={outputValues()[i]}
-            onKeyDown={makeKeyEventHandler(i)}
-            onInput={makeInputEventHandler(i)}
+            value={output(letter)}
+            onKeyDown={makeKeyEventHandler(letter)}
+            onInput={makeOutputInputEventHandler(letter)}
+            style={{color: output(letter) == '!' ? 'red' : undefined}}
         /> as any;
         outputs.push(input);
     }
     const inputs: Element[] = [];
-    for (let i = 0; i < Object.keys(arrows).length; i++) {
-        let targets = arrows[i];
+    for (let clue = 0; clue < Object.keys(arrows).length; clue++) {
+        let targets = arrows[clue];
         let element = <div>
             <Box sx={{
                 display: 'flex',
@@ -93,13 +125,15 @@ const App: Component = () => {
                 alignItems: 'center',
             }}>
                 <div class="clue">
-                    {clues[i]}
+                    {clues[clue]}
                 </div>
                 <div class="row">
-                    {targets.map(i => <input
-                        value={outputValues()[i]}
-                        onKeyDown={makeKeyEventHandler(i)}
-                        onInput={makeInputEventHandler(i)}
+                    {targets.map(letter => <input
+                        value={inputValues()[letter][clue]}
+                        placeholder={output(letter)}
+                        onKeyDown={makeKeyEventHandler(letter)}
+                        onInput={makeInputInputEventHandler(clue, letter)}
+                        style={{color: output(letter) == '!' ? 'red' : undefined}}
                     />)}
                 </div>
             </Box>
@@ -140,7 +174,7 @@ const App: Component = () => {
     }, []);
     const [won, setWon] = createSignal(false);
     createEffect(() => {
-        if (validatePuzzleSolution(outputValues().join(''), answerHash)) {
+        if (validatePuzzleSolution(outputs.map((_, i) => output(i)).join(''), answerHash)) {
             setWon(true);
         }
     });
