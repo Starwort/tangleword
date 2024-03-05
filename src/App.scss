@@ -4,11 +4,17 @@ input {
     text-align: center;
     font-size: 36px;
     text-transform: uppercase;
+    &:disabled {
+        background-color: transparent;
+        border: 2px solid;
+    }
 }
 
 .clue {
     padding: 0 8px;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     flex-grow: 1;
 }
 
@@ -37,4 +43,12 @@ main {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+}
+.alt-puzzle-view {
+    margin-top: 48px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 8px;
 }

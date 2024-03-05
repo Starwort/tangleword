@@ -226,6 +226,32 @@ const App: Component = () => {
                     {outputs}
                 </div>
             </div>
+            <div class="alt-puzzle-view">
+                <div class="column">
+                    {clues.map(clue => <div class="clue">
+                        {clue}
+                    </div>)}
+                </div>
+
+                {outputs.map((_, letter) => (
+                    <div class="column">
+                        {clues.map((_, clueIdx) => (
+                            arrows[clueIdx].includes(letter) ?
+                                <>
+                                    <input
+                                        value={inputValues()[letter][clueIdx]}
+                                        placeholder={output(letter)}
+                                        onKeyDown={makeKeyEventHandler(letter)}
+                                        onInput={makeInputInputEventHandler(clueIdx, letter)}
+                                        style={{color: output(letter) == '!' ? 'red' : undefined}}
+                                    />
+                                </> : <>
+                                    <input disabled />
+                                </>
+                        ))}
+                    </div>
+                ))}
+            </div>
         </main>
     </ThemeProvider>;
 };
