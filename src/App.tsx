@@ -200,11 +200,19 @@ const App: Component = () => {
                 <IconButton
                     color='inherit'
                     onClick={() => {
-                        const url = new URL(window.location.href);
-                        url.searchParams.set('puzzle', serialise(
+                        const urlObj = new URL(window.location.href);
+                        urlObj.searchParams.set('puzzle', serialise(
                             arrows, clues, answerHash
                         ));
-                        navigator.clipboard.writeText(decodeURIComponent(url.href));
+                        let url = decodeURIComponent(urlObj.href);
+                        if (
+                            'share' in navigator
+                            && (!('canShare' in navigator) || navigator.canShare({url}))
+                        ) {
+                            navigator.share({url});
+                        } else {
+                            navigator.clipboard.writeText(url);
+                        }
                     }}
                     title="Share this puzzle"
                 >
