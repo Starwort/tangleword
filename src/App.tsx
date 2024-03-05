@@ -56,6 +56,12 @@ const App: Component = () => {
     const makeKeyEventHandler = (i: number): JSX.EventHandler<HTMLInputElement, KeyboardEvent> => (event) => {
         if (event.key === 'Unidentified') return; // doesn't work on mobile
         if (event.isComposing || event.keyCode === 229) return;
+        if (event.key === 'Delete') {
+            if ((event.target as HTMLInputElement).value.length === 0) {
+                shiftFocus();
+            }
+            return;
+        }
         if (event.key === 'Backspace') {
             if ((event.target as HTMLInputElement).value.length === 0) {
                 shiftFocus(-1);
