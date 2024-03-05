@@ -51,4 +51,11 @@ main {
     flex-direction: row;
     justify-content: center;
     gap: 8px;
+    & > div {
+        display: flex;
+        flex-direction: column;
+    }
+    & div {
+        gap: 8px;
+    }
 }

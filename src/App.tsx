@@ -233,24 +233,27 @@ const App: Component = () => {
                     </div>)}
                 </div>
 
-                {outputs.map((_, letter) => (
-                    <div class="column">
-                        {clues.map((_, clueIdx) => (
-                            arrows[clueIdx].includes(letter) ?
-                                <>
-                                    <input
-                                        value={inputValues()[letter][clueIdx]}
-                                        placeholder={output(letter)}
-                                        onKeyDown={makeKeyEventHandler(letter)}
-                                        onInput={makeInputInputEventHandler(clueIdx, letter)}
-                                        style={{color: output(letter) == '!' ? 'red' : undefined}}
-                                    />
-                                </> : <>
-                                    <input disabled />
-                                </>
-                        ))}
-                    </div>
-                ))}
+                <div>
+                    {clues.map((_, clueIdx) => (
+                        <div class="row" style={{gap: ''}}>
+                            {outputs.map((_, letter) => (
+                                arrows[clueIdx].includes(letter) ?
+                                    <>
+                                        <input
+                                            value={inputValues()[letter][clueIdx]}
+                                            placeholder={output(letter)}
+                                            onKeyDown={makeKeyEventHandler(letter)}
+                                            onInput={makeInputInputEventHandler(clueIdx, letter)}
+                                            style={{color: output(letter) == '!' ? 'red' : undefined}}
+                                        />
+                                    </> : <>
+                                        <input disabled />
+                                    </>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+
             </div>
         </main>
     </ThemeProvider>;
