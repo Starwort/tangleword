@@ -6,13 +6,6 @@ import {ArrowSets} from './arrow_sets';
 import {COLOURS} from './colours';
 import {validatePuzzleSolution} from './puzzle_generator';
 
-interface PuzzleViewProps {
-    arrows: ArrowSets;
-    clues: string[];
-    outputCount: number;
-    answerHash: string;
-    error: string;
-}
 function shiftFocus(by = 1) {
     const inputs = tabbable(document.documentElement);
     const thisInput = inputs.findIndex(
@@ -47,22 +40,48 @@ function makeKeyEventHandler(i: number): JSX.EventHandler<HTMLInputElement, Keyb
     };
 }
 
+function getUnique(vals: string[]): string {
+    vals = vals.filter(v => v !== '');
+    let unique = new Set(vals);
+    if (unique.size > 1) {
+        return '!';
+    }
+    return vals[0] ?? '';
+}
+
+interface PuzzleViewProps {
+    arrows: ArrowSets;
+    clues: string[];
+    outputCount: number;
+    answerHash: string;
+    setError: (error: string) => void;
+    saveSlot: string;
+    onComplete: () => void;
+}
 export function PuzzleView(props: PuzzleViewProps) {
-    const [inputValues, setInputValues] = createSignal<string[][]>(
-        Array.from(
+    let savedInputValues = JSON.parse(window.localStorage[props.saveSlot] || 'null');
+    if (
+        !Array.isArray(savedInputValues)
+        || savedInputValues.length !== props.outputCount
+        || savedInputValues.some((v: any) => !Array.isArray(v))
+        || savedInputValues.some((v: any) => v.length !== props.clues.length)
+        || savedInputValues.some((v: any) => v.some((v: any) => typeof v !== 'string'))
+        || savedInputValues.some((v: any) => v.some((v: any) => v.length > 1))
+    ) {
+        savedInputValues = Array.from(
             {length: props.outputCount},
             _ => Array.from({length: props.clues.length}, _ => '')
-        ),
+        );
+        props.setError('Save data for this puzzle is corrupted, resetting');
+    }
+    const [inputValues, setInputValues] = createSignal<string[][]>(
+        savedInputValues,
         {equals: false}
     );
-    const output = (i: number) => {
-        let values = inputValues()[i].filter(v => v !== '');
-        let unique = new Set(values);
-        if (unique.size > 1) {
-            return '!';
-        }
-        return values[0] ?? '';
-    };
+    createEffect(() => {
+        window.localStorage[props.saveSlot] = JSON.stringify(inputValues());
+    });
+    const output = (i: number) => getUnique(inputValues()[i]);
     const makeInputInputEventHandler = (clue: number, letter: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
         let value = event.target.value;
         if (value.length > 1) {
@@ -144,7 +163,6 @@ export function PuzzleView(props: PuzzleViewProps) {
         }
         // subscribe to the signals that draw banners
         let _: any = won();
-        _ = props.error;
         const isLarge = useMediaQuery(theme.breakpoints.up('md'));
         const inputBoxes = inputs();
         const outputBoxes = outputs();
@@ -171,20 +189,22 @@ export function PuzzleView(props: PuzzleViewProps) {
         }
         return lines;
     }, []);
-    const [won, setWon] = createSignal(false);
+    const [won, setWon] = createSignal(window.localStorage[props.saveSlot + 'won'] === 'true');
     createEffect(() => {
         if (validatePuzzleSolution(
             Array.from({length: props.outputCount}, (_, i) => output(i)).join(''),
-            props.answerHash
-        )) {
+            props.answerHash,
+        ) && !won()) {
             setWon(true);
+            props.onComplete();
+            window.localStorage[props.saveSlot + 'won'] = 'true';
         }
     });
 
     const shouldTransform = useMediaQuery(theme.breakpoints.up('md'));
     return <>
         <Show when={won()}>
-            <Alert severity="success">You won!</Alert>
+            <Alert severity="success">You have completed this puzzle!</Alert>
         </Show>
         <div class="puzzle">
             <div class="column">

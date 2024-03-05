@@ -10,14 +10,47 @@ import {ArrowSets, generateArrowSets} from './arrow_sets';
 import {generatePuzzle, puzzleFromString, serialise} from './puzzle_generator';
 import {makeRandom} from './random';
 
+function loadNumFromStorage(key: string, defaultValue: number): number {
+    let value = parseInt(window.localStorage[key] || '');
+    if (isNaN(value)) {
+        value = defaultValue;
+    }
+    return value;
+}
+
 export default function App() {
     const query = new URLSearchParams(window.location.search);
     const [error, setError] = createSignal('');
+    const [themeColour, setThemeColour] = createSignal<'dark' | 'light'>(
+        window.localStorage.theme === 'light' ? 'light' : 'dark'
+    );
+    createEffect(() => {
+        window.localStorage.theme = themeColour();
+    });
+    const [dailiesSolved, setDailiesSolved] = createSignal<number>(
+        loadNumFromStorage('dailiesSolved', 0)
+    );
+    createEffect(() => {
+        window.localStorage.dailiesSolved = dailiesSolved().toString();
+    });
+    const [lastDailySolved, setLastDailySolved] = createSignal<number>(
+        loadNumFromStorage('lastDailySolved', 0)
+    );
+    createEffect(() => {
+        window.localStorage.lastDailySolved = lastDailySolved().toString();
+    });
+    const [dailyStreak, setDailyStreak] = createSignal<number>(
+        loadNumFromStorage('dailyStreak', 0)
+    );
+    createEffect(() => {
+        window.localStorage.dailyStreak = dailyStreak().toString();
+    });
     let arrows: ArrowSets, clues: string[], outputCount, answerHash: string;
     let randomSeed: number;
+    let isDaily = true;
     if (query.has('seed')) {
         randomSeed = parseInt(query.get('seed')!);
-        if (isNaN(randomSeed)) {
+        if (isDaily = isNaN(randomSeed)) {
             setError('Invalid seed');
             randomSeed = Math.floor(new Date() as any / 8.64e7);
         }
@@ -32,6 +65,7 @@ export default function App() {
                 query.get('puzzle')!
             );
             generatedFromSeed = false;
+            isDaily = false;
         } catch (_error) {
             let error: Error = _error as any;
             setError(error.message);
@@ -42,12 +76,6 @@ export default function App() {
         arrows = generateArrowSets(random);
         [clues, outputCount, answerHash] = generatePuzzle(arrows, random);
     }
-    const [themeColour, setThemeColour] = createSignal<'dark' | 'light'>(
-        window.localStorage.theme === 'light' ? 'light' : 'dark'
-    );
-    createEffect(() => {
-        window.localStorage.theme = themeColour();
-    });
     const palette = createMemo(() =>
         createPalette({
             mode: themeColour(),
@@ -122,7 +150,19 @@ export default function App() {
                 clues={clues}
                 outputCount={outputCount}
                 answerHash={answerHash}
-                error={error()}
+                setError={setError}
+                saveSlot={isDaily ? randomSeed.toString() : serialise(arrows, clues, answerHash)}
+                onComplete={() => {
+                    if (isDaily) {
+                        setDailiesSolved(dailiesSolved => dailiesSolved + 1);
+                        setLastDailySolved(randomSeed);
+                        if (randomSeed == lastDailySolved() + 1) {
+                            setDailyStreak(dailyStreak => dailyStreak + 1);
+                        } else {
+                            setDailyStreak(1);
+                        }
+                    }
+                }}
             />
         </main>
     </ThemeProvider>;
