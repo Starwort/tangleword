@@ -72,7 +72,9 @@ export function PuzzleView(props: PuzzleViewProps) {
             {length: props.outputCount},
             _ => Array.from({length: props.clues.length}, _ => '')
         );
-        props.setError('Save data for this puzzle is corrupted, resetting');
+        if (window.localStorage[props.saveSlot]) {
+            props.setError('Save data for this puzzle is corrupted, resetting');
+        }
     }
     const [inputValues, setInputValues] = createSignal<string[][]>(
         savedInputValues,
