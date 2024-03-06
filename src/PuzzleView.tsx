@@ -157,12 +157,8 @@ export function PuzzleView(props: PuzzleViewProps) {
     });
     const theme = useTheme();
     createEffect((oldLines: LeaderLine[]) => {
-        for (let line of oldLines) {
-            line.hide();
-            line.remove();
-        }
         // subscribe to the signals that draw banners
-        let _: any = won();
+        let _ = won();
         const isLarge = useMediaQuery(theme.breakpoints.up('md'));
         const inputBoxes = inputs();
         const outputBoxes = outputs();
@@ -175,16 +171,21 @@ export function PuzzleView(props: PuzzleViewProps) {
                 if (!isLarge()) {
                     source = source.querySelector('.row')!;
                 }
-                setTimeout(() => lines.push(new LeaderLine(
-                    source, outputBoxes[target],
-                    {
-                        path: 'straight',
-                        endPlug: 'arrow3',
-                        color: colours[i % colours.length],
-                        startSocket: 'right',
-                        endSocket: 'left',
-                    }
-                )), 1);
+                setTimeout(() => {
+                    let line = oldLines.shift();
+                    line?.hide();
+                    line?.remove();
+                    lines.push(new LeaderLine(
+                        source, outputBoxes[target],
+                        {
+                            path: 'straight',
+                            endPlug: 'arrow3',
+                            color: colours[i % colours.length],
+                            startSocket: 'right',
+                            endSocket: 'left',
+                        }
+                    ));
+                }, 1);
             }
         }
         return lines;
