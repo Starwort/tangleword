@@ -286,6 +286,7 @@ export const DICTIONARY: [string, string][] = [
     ['lax', ADJECTIVE],
     ['lay', VERB],
     ['lea', GEOGRAPHICAL_FEATURE],
+    ['leg', BODY_PART],
     ['lei', CLOTHES],
     ['ley', GEOGRAPHICAL_FEATURE],
     ['lie', UNTRUTH],

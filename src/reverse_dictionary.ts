@@ -1,7 +1,7 @@
 import {ADJECTIVE, AFFIRMATIVE, ANIMAL, ANIMAL_NOISE, ANNOYANCE, BIRD, BOAT, BODY_PART, CLOTHES, COLOUR, COMPUTER_TERM, COUNTRY, CREATURE, DIRT, DRINK, EMOTION, EXCELLENT, EXCLAMATION, FEMALE_NAME, FISH, FOOD, FUEL, FURNITURE, GEOGRAPHICAL_FEATURE, GOVT_AGENCY, GREEK_LETTER, HELP, HESITATION, HONORIFIC, ILLNESS, INSECT, LETTER, LOCATION, MALE_NAME, METAL, MONTH, MOUNTAIN, MUSIC, NAME, NEGATIVE, NOISE, NUMBER, OBJECT, PARENT, PERSON, POEM, PRONOUN, RIVER, SHAPE, SNAKE, TIME, TOOL, TRANSPORT, TREE, UNIT, UNTRUTH, UTENSIL, VERB, WEATHER} from './dictionary';
 export const REVERSE_DICTIONARY: Record<string, string[]> = {
     [EXCLAMATION]: ['aah', 'ach', 'aha', 'bah', 'bam', 'boo', 'brr', 'doh', 'fie', 'heh', 'hey', 'hmm', 'huh', 'ick', 'meh', 'mmm', 'och', 'oof', 'ooh', 'shh', 'tsk', 'tut', 'ugh', 'wow', 'yah'],
-    [BODY_PART]: ['abs', 'arm', 'bum', 'ear', 'eye', 'fin', 'gut', 'hip', 'jaw', 'lip', 'maw', 'ova', 'paw', 'pus', 'rib', 'toe'],
+    [BODY_PART]: ['abs', 'arm', 'bum', 'ear', 'eye', 'fin', 'gut', 'hip', 'jaw', 'leg', 'lip', 'maw', 'ova', 'paw', 'pus', 'rib', 'toe'],
     [EXCELLENT]: ['ace'],
     [VERB]: ['act', 'add', 'aim', 'ask', 'ate', 'beg', 'bet', 'bid', 'buy', 'cry', 'cue', 'did', 'die', 'dig', 'dox', 'dug', 'eat', 'err', 'fix', 'fry', 'gag', 'get', 'got', 'had', 'hew', 'hid', 'hie', 'hit', 'hop', 'hug', 'hum', 'jab', 'jag', 'jig', 'jog', 'jot', 'lay', 'mix', 'mow', 'nab', 'nag', 'nap', 'nip', 'opt', 'owe', 'own', 'pay', 'pop', 'pry', 'rip', 'rob', 'rot', 'row', 'rub', 'rue', 'run', 'sag', 'sat', 'say', 'see', 'set', 'sew', 'sin', 'ski', 'sob', 'tow', 'try', 'tug', 'use', 'vex', 'vie', 'wag', 'was'],
     [ANNOYANCE]: ['ads', 'grr'],
