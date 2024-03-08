@@ -50,7 +50,19 @@ export default function App() {
         loadNumFromStorage('dailyStreak', 0)
     );
     createEffect(() => {
+        if (isDaily && lastDailySolved() + 1 < randomSeed) {
+            setDailyStreak(0);
+        }
         window.localStorage.dailyStreak = dailyStreak().toString();
+    });
+    const [bestDailyStreak, setBestDailyStreak] = createSignal<number>(
+        loadNumFromStorage('bestDailyStreak', 0)
+    );
+    createEffect(() => {
+        if (dailyStreak() > bestDailyStreak()) {
+            setBestDailyStreak(dailyStreak());
+            window.localStorage.bestDailyStreak = bestDailyStreak().toString();
+        }
     });
     const [errorModalOpen, setErrorModalOpen] = createSignal(false);
     const [statisticModalOpen, setStatisticModalOpen] = createSignal(false);
@@ -116,7 +128,10 @@ export default function App() {
                     Daily puzzles completed: {dailiesSolved()}
                 </Typography>
                 <Typography>
-                    Longest daily puzzle streak: {dailyStreak()}
+                    Current daily puzzle streak: {dailyStreak()}
+                </Typography>
+                <Typography>
+                    Longest daily puzzle streak: {bestDailyStreak()}
                 </Typography>
             </DialogContent>
             <DialogActions>
@@ -232,11 +247,7 @@ export default function App() {
                     if (isDaily) {
                         setDailiesSolved(dailiesSolved => dailiesSolved + 1);
                         setLastDailySolved(randomSeed);
-                        if (randomSeed == lastDailySolved() + 1) {
-                            setDailyStreak(dailyStreak => dailyStreak + 1);
-                        } else {
-                            setDailyStreak(1);
-                        }
+                        setDailyStreak(dailyStreak => dailyStreak + 1);
                         setStatisticModalOpen(true);
                     }
                 }}
