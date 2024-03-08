@@ -34,7 +34,7 @@ function backtrack(clues: string[], arrows: ArrowSets, random: Random, answer: s
     let targets = arrows[source];
     let origAnswer = targets.map(i => answer[i]).join('');
     let pattern = new RegExp(origAnswer);
-    let options = Object.entries(DICTIONARY).filter(([word, category]) => {
+    let options = DICTIONARY.filter(([word, category]) => {
         return !clues.includes(category) && pattern.test(word);
     });
     shuffle(options, random);
