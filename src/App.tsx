@@ -251,6 +251,7 @@ export default function App() {
                         setStatisticModalOpen(true);
                     }
                 }}
+                isCustomPuzzle={!generatedFromSeed}
             />
         </main>
     </ThemeProvider>;

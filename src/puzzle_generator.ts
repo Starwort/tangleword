@@ -69,7 +69,7 @@ export function generatePuzzle(arrows: ArrowSets, random: Random): [string[], nu
     if (answer.includes('.')) {
         throw new Error('Failed to fill in all outputs');
     }
-    return [clues, uniqueOutputs.size, hash(answer.join('').toUpperCase())];
+    return [clues, uniqueOutputs.size, hash(answer.join(''))];
 }
 
 function isSubset<T>(a: Iterable<T>, b: Set<T>): boolean {

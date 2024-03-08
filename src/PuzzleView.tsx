@@ -5,6 +5,7 @@ import {tabbable} from 'tabbable';
 import {ArrowSets} from './arrow_sets';
 import {COLOURS} from './colours';
 import {validatePuzzleSolution} from './puzzle_generator';
+import {REVERSE_DICTIONARY} from './reverse_dictionary';
 
 function shiftFocus(by = 1) {
     const inputs = tabbable(document.documentElement);
@@ -49,6 +50,30 @@ function getUnique(vals: string[]): string {
     return vals[0] ?? '';
 }
 
+interface ClueProps {
+    clue: string;
+    letters: string[];
+    isCustomPuzzle: boolean;
+}
+function Clue(props: ClueProps) {
+    let isValid = () => {
+        if (!props.isCustomPuzzle && !props.letters.some(l => l === '')) {
+            let word = props.letters.join('');
+            return REVERSE_DICTIONARY[props.clue].includes(word);
+        }
+        return true;
+    };
+    return <div
+        class="clue"
+        style={{
+            color: isValid() ? undefined : 'red',
+        }}
+        title={isValid() ? undefined : 'This word is not known to fit this clue'}
+    >
+        {props.clue}
+    </div>;
+}
+
 interface PuzzleViewProps {
     arrows: ArrowSets;
     clues: string[];
@@ -56,6 +81,7 @@ interface PuzzleViewProps {
     answerHash: string;
     setError: (error: string) => void;
     saveSlot: string;
+    isCustomPuzzle: boolean;
     onComplete: () => void;
 }
 export function PuzzleView(props: PuzzleViewProps) {
@@ -93,7 +119,7 @@ export function PuzzleView(props: PuzzleViewProps) {
             value = '';
         }
         setInputValues(inputValues => {
-            inputValues[letter][clue] = value.toUpperCase();
+            inputValues[letter][clue] = value.toLowerCase();
             return inputValues;
         });
         if (value.length != 0) {
@@ -110,7 +136,7 @@ export function PuzzleView(props: PuzzleViewProps) {
         }
         setInputValues(inputValues => {
             for (let j = 0; j < props.clues.length; j++) {
-                inputValues[i][j] = value.toUpperCase();
+                inputValues[i][j] = value.toLowerCase();
             }
             return inputValues;
         });
@@ -140,9 +166,11 @@ export function PuzzleView(props: PuzzleViewProps) {
                     flexDirection: {xs: 'column', md: 'row-reverse'},
                     alignItems: 'center',
                 }}>
-                    <div class="clue">
-                        {props.clues[clue]}
-                    </div>
+                    <Clue
+                        clue={props.clues[clue]}
+                        letters={targets.map(letter => inputValues()[letter][clue])}
+                        isCustomPuzzle={props.isCustomPuzzle}
+                    />
                     <div class="row">
                         {targets.map(letter => <input
                             value={inputValues()[letter][clue]}
