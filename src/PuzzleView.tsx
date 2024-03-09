@@ -110,10 +110,7 @@ export function PuzzleView(props: PuzzleViewProps) {
     });
     const output = (i: number) => getUnique(inputValues()[i]);
     const makeInputInputEventHandler = (clue: number, letter: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
-        let value = event.target.value;
-        if (value.length > 1) {
-            value = value[value.length - 1];
-        }
+        let value = event.data ?? '';
         if (!/^[a-zA-Z]$/.test(value)) {
             value = '';
         }
@@ -126,13 +123,7 @@ export function PuzzleView(props: PuzzleViewProps) {
         }
     };
     const makeOutputInputEventHandler = (i: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
-        let value = event.target.value;
-        if (value.length > 1) {
-            value = value[value.length - 1];
-        }
-        if (!/^[a-zA-Z]$/.test(value)) {
-            value = '';
-        }
+        let value = event.data ?? '';
         setInputValues(inputValues => {
             for (let j = 0; j < props.clues.length; j++) {
                 inputValues[i][j] = value.toLowerCase();
@@ -150,7 +141,15 @@ export function PuzzleView(props: PuzzleViewProps) {
                 value={output(letter)}
                 onKeyDown={makeKeyEventHandler(letter)}
                 onInput={makeOutputInputEventHandler(letter)}
-                style={{color: output(letter) == '!' ? 'red' : undefined}} /> as any;
+                style={{color: output(letter) == '!' ? 'red' : undefined}}
+                onFocus={e => e.target.setSelectionRange(0, e.target.value.length)}
+                onKeyUp={e => (
+                    e.target as HTMLInputElement
+                ).setSelectionRange(
+                    0,
+                    (e.target as HTMLInputElement).value.length,
+                )}
+            /> as any;
             outputs.push(input);
         }
         return outputs;
@@ -176,7 +175,15 @@ export function PuzzleView(props: PuzzleViewProps) {
                             placeholder={output(letter)}
                             onKeyDown={makeKeyEventHandler(letter)}
                             onInput={makeInputInputEventHandler(clue, letter)}
-                            style={{color: output(letter) == '!' ? 'red' : undefined}} />)}
+                            style={{color: output(letter) == '!' ? 'red' : undefined}}
+                            onFocus={e => e.target.setSelectionRange(0, e.target.value.length)}
+                            onKeyUp={e => (
+                                e.target as HTMLInputElement
+                            ).setSelectionRange(
+                                0,
+                                (e.target as HTMLInputElement).value.length,
+                            )}
+                        />)}
                     </div>
                 </Box>
             </div>;
@@ -259,18 +266,27 @@ export function PuzzleView(props: PuzzleViewProps) {
                     <div class="row" style={{gap: ''}}>
                         {Array.from({length: props.outputCount}, (_, letter) => (
                             props.arrows[clueIdx].includes(letter) ?
-                                <>
-                                    <input
-                                        value={inputValues()[letter][clueIdx]}
-                                        placeholder={output(letter)}
-                                        onKeyDown={makeKeyEventHandler(letter)}
-                                        onInput={makeInputInputEventHandler(clueIdx, letter)}
-                                        style={{color: output(letter) == '!' ? 'red' : undefined}} />
-                                </> : <>
-                                    <input disabled style={{
-                                        "background-color": theme.palette.mode == 'dark' ? 'transparent' : 'black'
-                                    }} />
-                                </>
+                                <input
+                                    value={inputValues()[letter][clueIdx]}
+                                    placeholder={output(letter)}
+                                    onKeyDown={makeKeyEventHandler(letter)}
+                                    onInput={makeInputInputEventHandler(clueIdx, letter)}
+                                    style={{color: output(letter) == '!' ? 'red' : undefined}}
+                                    onFocus={e => e.target.setSelectionRange(0, e.target.value.length)}
+                                    onKeyUp={e => (
+                                        e.target as HTMLInputElement
+                                    ).setSelectionRange(
+                                        0,
+                                        (e.target as HTMLInputElement).value.length,
+                                    )}
+                                /> : <input
+                                    disabled
+                                    style={{
+                                        "background-color": theme.palette.mode == 'dark'
+                                            ? 'transparent'
+                                            : 'black'
+                                    }}
+                                />
                         ))}
                     </div>
                 ))}
