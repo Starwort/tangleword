@@ -1,18 +1,17 @@
 import {Alert, Box, useMediaQuery, useTheme} from '@suid/material';
 import LeaderLine from 'leader-line-new';
 import {JSX, Show, createEffect, createMemo, createSignal} from 'solid-js';
-import {tabbable} from 'tabbable';
 import {ArrowSets} from './arrow_sets';
 import {COLOURS} from './colours';
 import {validatePuzzleSolution} from './puzzle_generator';
 import {REVERSE_DICTIONARY} from './reverse_dictionary';
 
 function shiftFocus(by = 1) {
-    const inputs = tabbable(document.documentElement);
+    const inputs = [...document.querySelectorAll('input:not([disabled])')] as HTMLInputElement[];
     const thisInput = inputs.findIndex(
         (e) => e === document.activeElement
     );
-    const next = inputs[thisInput + by];
+    const next = inputs[(thisInput + by + inputs.length) % inputs.length];
     next?.focus();
 }
 function makeKeyEventHandler(i: number): JSX.EventHandler<HTMLInputElement, KeyboardEvent> {
