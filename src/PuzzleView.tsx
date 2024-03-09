@@ -1,6 +1,6 @@
 import {Alert, Box, useMediaQuery, useTheme} from '@suid/material';
 import LeaderLine from 'leader-line-new';
-import {JSX, Show, createEffect, createMemo, createSignal} from 'solid-js';
+import {JSX, Show, createEffect, createMemo, createSignal, onCleanup} from 'solid-js';
 import {COLOURS} from './colours';
 import {PuzzleData, serialise, validatePuzzleSolution} from './puzzle_generator';
 import {REVERSE_DICTIONARY} from './reverse_dictionary';
@@ -204,9 +204,6 @@ export function PuzzleView(props: PuzzleViewProps) {
                     source = source.querySelector('.row')!;
                 }
                 setTimeout(() => {
-                    let line = oldLines.shift();
-                    line?.hide();
-                    line?.remove();
                     lines.push(new LeaderLine(
                         source, outputBoxes[target],
                         {
@@ -220,6 +217,12 @@ export function PuzzleView(props: PuzzleViewProps) {
                 }, 1);
             }
         }
+        onCleanup(() => {
+            for (let line of lines) {
+                line.hide();
+                line.remove();
+            }
+        });
         return lines;
     }, []);
     const [won, setWon] = createSignal(window.localStorage[saveSlot + 'won'] === 'true');
