@@ -1,103 +1,28 @@
-import {JSX, Show, createEffect, createMemo, createResource, createSignal, onCleanup} from "solid-js";
-
-import {BarChart, CalendarToday, DarkMode, Favorite as Heart, InfoOutlined, LightMode, Menu as MenuIcon, Share} from "@suid/icons-material";
-import {AppBar, Box, Button, CircularProgress, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ThemeProvider, Toolbar, Typography, createPalette, createTheme, useMediaQuery} from "@suid/material";
+import {CalendarToday, DarkMode, Favorite as Heart, InfoOutlined, LightMode, Menu as MenuIcon} from "@suid/icons-material";
+import ListIcon from "@suid/icons-material/List";
+import {AppBar, Box, Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ThemeProvider, Toolbar, Typography, createPalette, createTheme, useMediaQuery} from "@suid/material";
+import {JSXElement, Match, Show, Switch, createEffect, createMemo, createSignal, onCleanup} from "solid-js";
 import "./App.scss";
-import {PuzzleView} from "./PuzzleView";
-import {GitHub, KofiIcon as Kofi} from "./extra_icons";
-import {PuzzleData, generateFullPuzzleFromSeed, puzzleFromString, serialise} from "./puzzle_generator";
-
-function loadNumFromStorage(key: string, defaultValue: number): number {
-    let value = parseInt(window.localStorage[key] || "");
-    if (isNaN(value)) {
-        value = defaultValue;
-    }
-    return value;
-}
-
-function LinkButton(props: {href: string; title: string; children?: JSX.Element;}) {
-    // @ts-ignore - this works but the types seem to be wrong
-    return <IconButton
-        color="inherit"
-        target="_blank"
-        {...props}
-    />;
-}
+import {GitHub, Kofi} from "./extra_icons";
+import {CustomPuzzles} from "./pages/CustomPuzzles";
+import {Play} from "./pages/Play";
+import {formatTime, loadNumFromStorage} from "./util";
 
 export default function App() {
     const query = new URLSearchParams(window.location.search);
-    const [error, setError] = createSignal("");
+    const [error, _setError] = createSignal("");
+    function setError(e: string) {
+        _setError(e);
+        setErrorModalOpen(true);
+    }
     const [themeColour, setThemeColour] = createSignal<"dark" | "light">(
         window.localStorage.theme === "light" ? "light" : "dark"
     );
     createEffect(() => {
         window.localStorage.theme = themeColour();
     });
-    const [dailiesSolved, setDailiesSolved] = createSignal<number>(
-        loadNumFromStorage("dailiesSolved", 0)
-    );
-    createEffect(() => {
-        window.localStorage.dailiesSolved = dailiesSolved().toString();
-    });
-    const [lastDailySolved, setLastDailySolved] = createSignal<number>(
-        loadNumFromStorage("lastDailySolved", 0)
-    );
-    createEffect(() => {
-        window.localStorage.lastDailySolved = lastDailySolved().toString();
-    });
-    const [dailyStreak, setDailyStreak] = createSignal<number>(
-        loadNumFromStorage("dailyStreak", 0)
-    );
-    createEffect(() => {
-        if (data.latest && data.latest.isDaily && lastDailySolved() + 1 < data.latest.randomSeed) {
-            setDailyStreak(0);
-        }
-        window.localStorage.dailyStreak = dailyStreak().toString();
-    });
-    const [bestDailyStreak, setBestDailyStreak] = createSignal<number>(
-        loadNumFromStorage("bestDailyStreak", 0)
-    );
-    createEffect(() => {
-        if (dailyStreak() > bestDailyStreak()) {
-            setBestDailyStreak(dailyStreak());
-            window.localStorage.bestDailyStreak = bestDailyStreak().toString();
-        }
-    });
-    const [errorModalOpen, setErrorModalOpen] = createSignal(false);
-    const [statisticModalOpen, setStatisticModalOpen] = createSignal(false);
     const [infoModalOpen, setInfoModalOpen] = createSignal(false);
-    const [data] = createResource<PuzzleData>(() => {
-        let randomSeed: number;
-        let isDaily = true;
-        if (query.has("seed")) {
-            randomSeed = parseInt(query.get("seed")!);
-            if (isDaily = isNaN(randomSeed)) {
-                setError("Invalid seed");
-                setErrorModalOpen(true);
-                randomSeed = Math.floor(new Date() as any / 8.64e7);
-            }
-        } else {
-            randomSeed = Math.floor(new Date() as any / 8.64e7);
-        }
-        return new Promise(resolve => {
-            if (query.has("puzzle")) {
-                try {
-                    let puzzle = puzzleFromString(query.get("puzzle")!);
-                    console.log("loaded!", puzzle);
-                    return resolve(puzzle);
-                } catch (_error) {
-                    let error: Error = _error as any;
-                    setError(error.message);
-                    setErrorModalOpen(true);
-                }
-            }
-            setTimeout(() => {
-                let puzzle = generateFullPuzzleFromSeed(randomSeed, isDaily);
-                console.log("generated!", puzzle);
-                resolve(puzzle);
-            }, 0);
-        });
-    });
+    const [errorModalOpen, setErrorModalOpen] = createSignal(false);
     const palette = createMemo(() =>
         createPalette({
             mode: themeColour(),
@@ -119,12 +44,12 @@ export default function App() {
             setTemporaryDrawerOpen(false);
         }
     });
-    let updateLines;
+    let updateAnimationFrame: (() => void) | undefined;
     let needAnimationFrame = false;
-    function runUpdateLines() {
-        updateLines!();
-        if (needAnimationFrame) {
-            requestAnimationFrame(runUpdateLines);
+    function runUpdate() {
+        updateAnimationFrame?.();
+        if (needAnimationFrame && updateAnimationFrame) {
+            requestAnimationFrame(runUpdate);
         }
     }
     const [timeUntilNextDaily, setTimeUntilNextDaily] = createSignal(0);
@@ -134,17 +59,19 @@ export default function App() {
         setTimeUntilNextDaily(nextDaily - now);
     }, 500);
     onCleanup(() => clearInterval(handle));
-    function formatTime(millis: number) {
-        let seconds = Math.floor(millis / 1000);
-        let minutes = Math.floor(seconds / 60);
-        let hours = Math.floor(minutes / 60);
-        let parts = [];
-        if (hours > 0) {
-            parts.push(hours.toString().padStart(2, "0"));
-        }
-        parts.push((minutes % 60).toString().padStart(2, "0"));
-        parts.push((seconds % 60).toString().padStart(2, "0"));
-        return parts.join(":");
+
+    const [lastDailySolved, setLastDailySolved] = createSignal<number>(
+        loadNumFromStorage("lastDailySolved", 0)
+    );
+    createEffect(() => {
+        window.localStorage.lastDailySolved = lastDailySolved().toString();
+    });
+
+    let extraButtons: JSXElement[] = [];
+    const [page, _setPage] = createSignal(query.get("page") ?? "play");
+    function setPage(pageId: string, urlParams?: string) {
+        window.history.pushState(null, "", window.location.pathname + (urlParams ? '?' + urlParams : ''));
+        _setPage(pageId);
     }
 
     return <ThemeProvider theme={theme}>
@@ -156,23 +83,6 @@ export default function App() {
             </DialogContent>
             <DialogActions>
                 <Button onClick={() => setErrorModalOpen(false)}>Ok</Button>
-            </DialogActions>
-        </Dialog>
-        <Dialog open={statisticModalOpen()} onClose={() => setStatisticModalOpen(false)}>
-            <DialogTitle>Statistics</DialogTitle>
-            <DialogContent>
-                <Typography>
-                    Daily puzzles completed: {dailiesSolved()}
-                </Typography>
-                <Typography>
-                    Current daily puzzle streak: {dailyStreak()}
-                </Typography>
-                <Typography>
-                    Longest daily puzzle streak: {bestDailyStreak()}
-                </Typography>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={() => setStatisticModalOpen(false)}>Close</Button>
             </DialogActions>
         </Dialog>
         <Dialog open={infoModalOpen()} onClose={() => setInfoModalOpen(false)}>
@@ -236,38 +146,7 @@ export default function App() {
                 >
                     <InfoOutlined />
                 </IconButton>
-                <IconButton
-                    color="inherit"
-                    onClick={() => setStatisticModalOpen(true)}
-                    title="Statistics"
-                >
-                    <BarChart />
-                </IconButton>
-                <IconButton
-                    color="inherit"
-                    onClick={() => {
-                        const urlObj = new URL(window.location.href);
-                        urlObj.search = "";
-                        if (data.latest!.generatedFromSeed) {
-                            urlObj.searchParams.set("seed", data.latest!.randomSeed.toString());
-                        } else {
-                            urlObj.searchParams.set("puzzle", serialise(data.latest!));
-                        }
-                        let url = decodeURIComponent(urlObj.href);
-                        if (
-                            "share" in navigator
-                            && (!("canShare" in navigator) || navigator.canShare({url}))
-                        ) {
-                            navigator.share({url});
-                        } else {
-                            navigator.clipboard.writeText(url);
-                        }
-                    }}
-                    title="Share this puzzle"
-                    disabled={data.loading}
-                >
-                    <Share />
-                </IconButton>
+                {extraButtons}
             </Toolbar>
         </AppBar>
         <Toolbar />
@@ -284,8 +163,11 @@ export default function App() {
                 <ListItem disablePadding>
                     <ListItemButton
                         component="a"
-                        href={window.location.href.split("?")[0]}
-                        selected={data.latest?.isDaily}
+                        href={window.location.pathname}
+                        onClick={event => {
+                            event.preventDefault();
+                            setPage("play");
+                        }}
                     >
                         <ListItemIcon>
                             <CalendarToday />
@@ -296,7 +178,23 @@ export default function App() {
                         />
                     </ListItemButton>
                 </ListItem>
-                {/* todo: custom puzzles */}
+                <ListItem disablePadding>
+                    <ListItemButton
+                        component="a"
+                        href={window.location.pathname + '?page=custom'}
+                        onClick={event => {
+                            event.preventDefault();
+                            setPage("custom", "page=custom");
+                        }}
+                    >
+                        <ListItemIcon>
+                            <ListIcon />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Custom Puzzles"
+                        />
+                    </ListItemButton>
+                </ListItem>
             </List>
             <div style={{"flex-grow": 1}} />
             <List>
@@ -349,44 +247,34 @@ export default function App() {
             }}
             onTransitionStart={() => {
                 needAnimationFrame = true;
-                runUpdateLines();
+                runUpdate();
             }}
             onTransitionEnd={() => needAnimationFrame = false}
         >
             <main>
-                <Show
-                    when={!data.loading}
-                    fallback={<Box sx={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: 'column',
-                        alignItems: "center",
-                        paddingTop: 16,
-                    }}>
-                        <CircularProgress variant="indeterminate" />
-                    </Box>}
-                >
-                    <PuzzleView
-                        ref={updateLines!}
-                        data={data()!}
-                        setError={(e) => {
-                            setError(e);
-                            setErrorModalOpen(true);
-                        }}
-                        onComplete={() => {
-                            if (data.latest!.isDaily) {
-                                setDailiesSolved(dailiesSolved => dailiesSolved + 1);
-                                setLastDailySolved(data.latest!.randomSeed);
-                                setDailyStreak(dailyStreak => dailyStreak + 1);
-                                setStatisticModalOpen(true);
-                            }
-                        }}
-                        isCustomPuzzle={!data()!.generatedFromSeed}
-                    />
-                </Show>
+                <Switch>
+                    <Match when={page() == "play"}>
+                        <Play
+                            setError={setError}
+                            lastDailySolved={lastDailySolved()}
+                            setLastDailySolved={setLastDailySolved}
+                            ref={data => {
+                                updateAnimationFrame = data.updateAnimationFrame;
+                                extraButtons = data.toolbarButtons;
+                            }}
+                            setPage={setPage}
+                        />
+                    </Match>
+                    <Match when={page() == "custom"}>
+                        <CustomPuzzles
+                            setError={setError}
+                            setPage={setPage}
+                        />
+                    </Match>
+                </Switch>
             </main>
         </Box>
-    </ThemeProvider>;
+    </ThemeProvider >;
 }
 
 
