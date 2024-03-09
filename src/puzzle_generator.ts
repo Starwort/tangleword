@@ -1,6 +1,6 @@
-import {ArrowSets, MutArrowSets} from './arrow_sets';
+import {ArrowSets, MutArrowSets, generateArrowSets} from './arrow_sets';
 import {DICTIONARY} from './dictionary';
-import {Random, shuffle} from './random';
+import {Random, makeRandom, shuffle} from './random';
 
 function hash(input: string): string {
     let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
@@ -63,6 +63,21 @@ export function generatePuzzle(arrows: ArrowSets, random: Random): [string[], nu
     return [clues, uniqueOutputs.size, hash(answer.join(''))];
 }
 
+export function generateFullPuzzleFromSeed(seed: number, isDaily: boolean): PuzzleData {
+    const random = makeRandom(seed);
+    const arrows = generateArrowSets(random);
+    const [clues, outputCount, answerHash] = generatePuzzle(arrows, random);
+    return {
+        arrows,
+        clues,
+        outputCount,
+        answerHash,
+        generatedFromSeed: true,
+        randomSeed: seed,
+        isDaily,
+    };
+}
+
 function isSubset<T>(a: Iterable<T>, b: Set<T>): boolean {
     for (let elem of a) {
         if (!b.has(elem)) {
@@ -72,7 +87,7 @@ function isSubset<T>(a: Iterable<T>, b: Set<T>): boolean {
     return true;
 }
 
-export function puzzleFromString(input: string): [ArrowSets, string[], number, string] {
+export function puzzleFromString(input: string): PuzzleData {
     const uniqueOutputs = new Set<number>();
     const arrows: MutArrowSets = {};
     const parts = input.split(';');
@@ -97,7 +112,14 @@ export function puzzleFromString(input: string): [ArrowSets, string[], number, s
             arrows[i].push(targetIdx);
         }
     }
-    return [arrows, clues, uniqueOutputs.size, answer];
+    return {
+        arrows,
+        clues,
+        outputCount: uniqueOutputs.size,
+        answerHash: answer,
+        generatedFromSeed: false,
+        isDaily: false,
+    };
 }
 
 export function validatePuzzleSolution(solution: string, answer: string): boolean {
@@ -107,7 +129,7 @@ export function validatePuzzleSolution(solution: string, answer: string): boolea
     return solutionHash === answerHash;
 }
 
-export function serialise(arrows: ArrowSets, clues: string[], answerHash: string): string {
+export function serialise({arrows, clues, answerHash}: PuzzleData): string {
     let parts = [];
     for (let i in arrows) {
         let part = [clues[i], ...arrows[i].map(i => i.toString())];
@@ -116,3 +138,17 @@ export function serialise(arrows: ArrowSets, clues: string[], answerHash: string
     parts.push(answerHash);
     return parts.join(';');
 }
+
+export type PuzzleData = {
+    arrows: ArrowSets;
+    clues: string[];
+    outputCount: number;
+    answerHash: string;
+} & ({
+    generatedFromSeed: false;
+    isDaily: false;
+} | {
+    generatedFromSeed: true;
+    randomSeed: number;
+    isDaily: boolean;
+});

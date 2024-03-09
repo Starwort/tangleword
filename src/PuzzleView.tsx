@@ -1,9 +1,8 @@
 import {Alert, Box, useMediaQuery, useTheme} from '@suid/material';
 import LeaderLine from 'leader-line-new';
 import {JSX, Show, createEffect, createMemo, createSignal} from 'solid-js';
-import {ArrowSets} from './arrow_sets';
 import {COLOURS} from './colours';
-import {validatePuzzleSolution} from './puzzle_generator';
+import {PuzzleData, serialise, validatePuzzleSolution} from './puzzle_generator';
 import {REVERSE_DICTIONARY} from './reverse_dictionary';
 
 function shiftFocus(by = 1) {
@@ -74,30 +73,27 @@ function Clue(props: ClueProps) {
 }
 
 interface PuzzleViewProps {
-    arrows: ArrowSets;
-    clues: string[];
-    outputCount: number;
-    answerHash: string;
+    data: PuzzleData;
     setError: (error: string) => void;
-    saveSlot: string;
     isCustomPuzzle: boolean;
     onComplete: () => void;
 }
 export function PuzzleView(props: PuzzleViewProps) {
-    let savedInputValues = JSON.parse(window.localStorage[props.saveSlot] || 'null');
+    let saveSlot = props.data.isDaily ? props.data.randomSeed.toString() : serialise(props.data);
+    let savedInputValues = JSON.parse(window.localStorage[saveSlot] || 'null');
     if (
         !Array.isArray(savedInputValues)
-        || savedInputValues.length !== props.outputCount
+        || savedInputValues.length !== props.data.outputCount
         || savedInputValues.some((v: any) => !Array.isArray(v))
-        || savedInputValues.some((v: any) => v.length !== props.clues.length)
+        || savedInputValues.some((v: any) => v.length !== props.data.clues.length)
         || savedInputValues.some((v: any) => v.some((v: any) => typeof v !== 'string'))
         || savedInputValues.some((v: any) => v.some((v: any) => v.length > 1))
     ) {
         savedInputValues = Array.from(
-            {length: props.outputCount},
-            _ => Array.from({length: props.clues.length}, _ => '')
+            {length: props.data.outputCount},
+            _ => Array.from({length: props.data.clues.length}, _ => '')
         );
-        if (window.localStorage[props.saveSlot]) {
+        if (window.localStorage[saveSlot]) {
             props.setError('Save data for this puzzle is corrupted, resetting');
         }
     }
@@ -106,7 +102,7 @@ export function PuzzleView(props: PuzzleViewProps) {
         {equals: false}
     );
     createEffect(() => {
-        window.localStorage[props.saveSlot] = JSON.stringify(inputValues());
+        window.localStorage[saveSlot] = JSON.stringify(inputValues());
     });
     const output = (i: number) => getUnique(inputValues()[i]);
     const makeInputInputEventHandler = (clue: number, letter: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
@@ -125,7 +121,7 @@ export function PuzzleView(props: PuzzleViewProps) {
     const makeOutputInputEventHandler = (i: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
         let value = event.data ?? '';
         setInputValues(inputValues => {
-            for (let j = 0; j < props.clues.length; j++) {
+            for (let j = 0; j < props.data.clues.length; j++) {
                 inputValues[i][j] = value.toLowerCase();
             }
             return inputValues;
@@ -136,7 +132,7 @@ export function PuzzleView(props: PuzzleViewProps) {
     };
     const outputs = createMemo((): Element[] => {
         let outputs = [];
-        for (let letter = 0; letter < props.outputCount; letter++) {
+        for (let letter = 0; letter < props.data.outputCount; letter++) {
             let input: Element = <input
                 value={output(letter)}
                 onKeyDown={makeKeyEventHandler(letter)}
@@ -156,8 +152,8 @@ export function PuzzleView(props: PuzzleViewProps) {
     });
     const inputs = createMemo((): Element[] => {
         let inputs = [];
-        for (let clue = 0; clue < Object.keys(props.arrows).length; clue++) {
-            let targets = props.arrows[clue];
+        for (let clue = 0; clue < Object.keys(props.data.arrows).length; clue++) {
+            let targets = props.data.arrows[clue];
             let element = <div>
                 <Box sx={{
                     display: 'flex',
@@ -165,7 +161,7 @@ export function PuzzleView(props: PuzzleViewProps) {
                     alignItems: 'center',
                 }}>
                     <Clue
-                        clue={props.clues[clue]}
+                        clue={props.data.clues[clue]}
                         letters={targets.map(letter => inputValues()[letter][clue] || output(letter))}
                         isCustomPuzzle={props.isCustomPuzzle}
                     />
@@ -200,8 +196,8 @@ export function PuzzleView(props: PuzzleViewProps) {
         const outputBoxes = outputs();
         let lines: LeaderLine[] = [];
         let colours = COLOURS[theme.palette.mode];
-        for (let i = 0; i < Object.keys(props.arrows).length; i++) {
-            let targets = props.arrows[i];
+        for (let i = 0; i < Object.keys(props.data.arrows).length; i++) {
+            let targets = props.data.arrows[i];
             for (let target of targets) {
                 let source = inputBoxes[i];
                 if (!isLarge()) {
@@ -226,15 +222,15 @@ export function PuzzleView(props: PuzzleViewProps) {
         }
         return lines;
     }, []);
-    const [won, setWon] = createSignal(window.localStorage[props.saveSlot + 'won'] === 'true');
+    const [won, setWon] = createSignal(window.localStorage[saveSlot + 'won'] === 'true');
     createEffect(() => {
         if (validatePuzzleSolution(
-            Array.from({length: props.outputCount}, (_, i) => output(i)).join(''),
-            props.answerHash,
+            Array.from({length: props.data.outputCount}, (_, i) => output(i)).join(''),
+            props.data.answerHash,
         ) && !won()) {
             setWon(true);
             props.onComplete();
-            window.localStorage[props.saveSlot + 'won'] = 'true';
+            window.localStorage[saveSlot + 'won'] = 'true';
         }
     });
 
@@ -256,16 +252,16 @@ export function PuzzleView(props: PuzzleViewProps) {
             transform: shouldTransform() ? undefined : 'scale(0.75)',
         }}>
             <div class="column">
-                {props.clues.map(clue => <div class="clue">
+                {props.data.clues.map(clue => <div class="clue">
                     {clue}
                 </div>)}
             </div>
 
             <div>
-                {props.clues.map((_, clueIdx) => (
+                {props.data.clues.map((_, clueIdx) => (
                     <div class="row" style={{gap: ''}}>
-                        {Array.from({length: props.outputCount}, (_, letter) => (
-                            props.arrows[clueIdx].includes(letter) ?
+                        {Array.from({length: props.data.outputCount}, (_, letter) => (
+                            props.data.arrows[clueIdx].includes(letter) ?
                                 <input
                                     value={inputValues()[letter][clueIdx]}
                                     placeholder={output(letter)}
