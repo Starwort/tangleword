@@ -168,7 +168,7 @@ export function PuzzleView(props: PuzzleViewProps) {
                 }}>
                     <Clue
                         clue={props.clues[clue]}
-                        letters={targets.map(letter => inputValues()[letter][clue])}
+                        letters={targets.map(letter => inputValues()[letter][clue] || output(letter))}
                         isCustomPuzzle={props.isCustomPuzzle}
                     />
                     <div class="row">
