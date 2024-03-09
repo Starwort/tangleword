@@ -241,6 +241,7 @@ export function PuzzleView(props: PuzzleViewProps) {
             props.data.answerHash,
         ) && !won()) {
             setWon(true);
+            setTimeout(() => lines.forEach(([_, __, line]) => line.position()), 0);
             props.onComplete();
             window.localStorage[saveSlot + 'won'] = 'true';
         }
