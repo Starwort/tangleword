@@ -168,6 +168,7 @@ export default function App() {
                         onClick={event => {
                             event.preventDefault();
                             setPage("play");
+                            setTemporaryDrawerOpen(false);
                         }}
                     >
                         <ListItemIcon>
@@ -186,6 +187,7 @@ export default function App() {
                         onClick={event => {
                             event.preventDefault();
                             setPage("custom", "page=custom");
+                            setTemporaryDrawerOpen(false);
                         }}
                     >
                         <ListItemIcon>
