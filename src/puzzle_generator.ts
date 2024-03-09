@@ -1,6 +1,6 @@
-import {ArrowSets} from './arrow_sets';
+import {ArrowSets, MutArrowSets} from './arrow_sets';
 import {DICTIONARY} from './dictionary';
-import {Random} from './random';
+import {Random, shuffle} from './random';
 
 function hash(input: string): string {
     let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
@@ -15,15 +15,6 @@ function hash(input: string): string {
     h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
 
     return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(16, '0');
-}
-
-function shuffle<T>(array: T[], random: Random) {
-    for (let i = array.length - 1; i > 0; i--) {
-        let j = Math.floor(random() * (i + 1));
-        if (i !== j) {
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
 }
 
 function backtrack(clues: string[], arrows: ArrowSets, random: Random, answer: string[]): boolean {
@@ -83,7 +74,7 @@ function isSubset<T>(a: Iterable<T>, b: Set<T>): boolean {
 
 export function puzzleFromString(input: string): [ArrowSets, string[], number, string] {
     const uniqueOutputs = new Set<number>();
-    const arrows: ArrowSets = {};
+    const arrows: MutArrowSets = {};
     const parts = input.split(';');
     const answer = parts.pop();
     if (answer === undefined) throw new Error('Invalid input; missing answer');
@@ -91,8 +82,7 @@ export function puzzleFromString(input: string): [ArrowSets, string[], number, s
     let clues = [];
     for (let i = 0; i < parts.length; i++) {
         let part = parts[i].split(',');
-        let partTargets: number[] = [];
-        arrows[i] = partTargets;
+        arrows[i] = [];
         let clue = part.shift();
         if (clue === undefined) throw new Error('Invalid input; empty part');
         clues.push(clue);
@@ -101,10 +91,10 @@ export function puzzleFromString(input: string): [ArrowSets, string[], number, s
             if (isNaN(targetIdx)) throw new Error('Invalid input; target is not a number');
             if (targetIdx < 0) throw new Error('Invalid input; target is negative');
             uniqueOutputs.add(targetIdx);
-            if (targetIdx <= Math.max(...partTargets)) {
+            if (targetIdx <= Math.max(...arrows[i])) {
                 throw new Error('Invalid input; targets are not in ascending order');
             }
-            partTargets.push(targetIdx);
+            arrows[i].push(targetIdx);
         }
     }
     return [arrows, clues, uniqueOutputs.size, answer];
