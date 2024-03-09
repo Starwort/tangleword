@@ -67,10 +67,11 @@ export default function App() {
         window.localStorage.lastDailySolved = lastDailySolved().toString();
     });
 
-    let extraButtons: JSXElement[] = [];
+    const [extraButtons, setExtraButtons] = createSignal<JSXElement[]>([]);
     const [page, _setPage] = createSignal(query.get("page") ?? "play");
     function setPage(pageId: string, urlParams?: string) {
         window.history.pushState(null, "", window.location.pathname + (urlParams ? '?' + urlParams : ''));
+        setExtraButtons([]);
         _setPage(pageId);
     }
 
@@ -146,7 +147,7 @@ export default function App() {
                 >
                     <InfoOutlined />
                 </IconButton>
-                {extraButtons}
+                {extraButtons()}
             </Toolbar>
         </AppBar>
         <Toolbar />
@@ -260,7 +261,7 @@ export default function App() {
                             setLastDailySolved={setLastDailySolved}
                             ref={data => {
                                 updateAnimationFrame = data.updateAnimationFrame;
-                                extraButtons = data.toolbarButtons;
+                                setExtraButtons(data.toolbarButtons);
                             }}
                             setPage={setPage}
                         />
