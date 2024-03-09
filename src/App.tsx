@@ -1,7 +1,7 @@
-import {JSX, Show, createEffect, createMemo, createResource, createSignal} from "solid-js";
+import {JSX, Show, createEffect, createMemo, createResource, createSignal, onCleanup} from "solid-js";
 
-import {BarChart, DarkMode, InfoOutlined, LightMode, Share} from "@suid/icons-material";
-import {Alert, AppBar, Box, Button, CircularProgress, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Link, ThemeProvider, Toolbar, Typography, createPalette, createTheme} from "@suid/material";
+import {BarChart, CalendarToday, DarkMode, Favorite as Heart, InfoOutlined, LightMode, Menu as MenuIcon, Share} from "@suid/icons-material";
+import {AppBar, Box, Button, CircularProgress, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ThemeProvider, Toolbar, Typography, createPalette, createTheme, useMediaQuery} from "@suid/material";
 import "./App.scss";
 import {PuzzleView} from "./PuzzleView";
 import {GitHub, KofiIcon as Kofi} from "./extra_icons";
@@ -20,7 +20,8 @@ function LinkButton(props: {href: string; title: string; children?: JSX.Element;
     return <IconButton
         color="inherit"
         target="_blank"
-        {...props} />;
+        {...props}
+    />;
 }
 
 export default function App() {
@@ -72,6 +73,7 @@ export default function App() {
             randomSeed = parseInt(query.get("seed")!);
             if (isDaily = isNaN(randomSeed)) {
                 setError("Invalid seed");
+                setErrorModalOpen(true);
                 randomSeed = Math.floor(new Date() as any / 8.64e7);
             }
         } else {
@@ -86,6 +88,7 @@ export default function App() {
                 } catch (_error) {
                     let error: Error = _error as any;
                     setError(error.message);
+                    setErrorModalOpen(true);
                 }
             }
             setTimeout(() => {
@@ -107,6 +110,43 @@ export default function App() {
         })
     );
     const theme = createTheme({palette});
+    const drawerIsPersistent = useMediaQuery(theme.breakpoints.up("md"));
+    const [persistentDrawerOpen, setPersistentDrawerOpen] = createSignal(true);
+    const [temporaryDrawerOpen, setTemporaryDrawerOpen] = createSignal(false);
+    createEffect(() => {
+        if (drawerIsPersistent()) {
+            setPersistentDrawerOpen(true);
+            setTemporaryDrawerOpen(false);
+        }
+    });
+    let updateLines;
+    let needAnimationFrame = false;
+    function runUpdateLines() {
+        updateLines!();
+        if (needAnimationFrame) {
+            requestAnimationFrame(runUpdateLines);
+        }
+    }
+    const [timeUntilNextDaily, setTimeUntilNextDaily] = createSignal(0);
+    let handle = setInterval(() => {
+        let now: number = new Date() as any;
+        let nextDaily = Math.ceil(now / 8.64e7) * 8.64e7;
+        setTimeUntilNextDaily(nextDaily - now);
+    }, 500);
+    onCleanup(() => clearInterval(handle));
+    function formatTime(millis: number) {
+        let seconds = Math.floor(millis / 1000);
+        let minutes = Math.floor(seconds / 60);
+        let hours = Math.floor(minutes / 60);
+        let parts = [];
+        if (hours > 0) {
+            parts.push(hours.toString().padStart(2, "0"));
+        }
+        parts.push((minutes % 60).toString().padStart(2, "0"));
+        parts.push((seconds % 60).toString().padStart(2, "0"));
+        return parts.join(":");
+    }
+
     return <ThemeProvider theme={theme}>
         <CssBaseline />
         <Dialog open={errorModalOpen()} onClose={() => setErrorModalOpen(false)}>
@@ -173,8 +213,17 @@ export default function App() {
                 <Button onClick={() => setInfoModalOpen(false)}>Close</Button>
             </DialogActions>
         </Dialog>
-        <AppBar>
+        <AppBar sx={{zIndex: drawerIsPersistent() ? (theme) => theme.zIndex.drawer + 1 : undefined}}>
             <Toolbar sx={{gap: 1}}>
+                <IconButton
+                    color="inherit"
+                    onClick={() => drawerIsPersistent() ?
+                        setPersistentDrawerOpen(open => !open)
+                        : setTemporaryDrawerOpen(true)
+                    }
+                >
+                    <MenuIcon />
+                </IconButton>
                 <Typography variant="h5" component="h1" sx={{
                     flexGrow: 1,
                 }}>
@@ -182,19 +231,16 @@ export default function App() {
                 </Typography>
                 <IconButton
                     color="inherit"
-                    onClick={() => {
-                        setThemeColour(themeColour => themeColour == "dark" ? "light" : "dark");
-                    }}
-                    title={themeColour() == "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                    onClick={() => setInfoModalOpen(true)}
+                    title="About"
                 >
-                    <Show when={themeColour() == "dark"} fallback={<DarkMode />}>
-                        <LightMode />
-                    </Show>
-                </IconButton>
-                <IconButton onClick={() => setInfoModalOpen(true)} title="About">
                     <InfoOutlined />
                 </IconButton>
-                <IconButton onClick={() => setStatisticModalOpen(true)} title="Statistics">
+                <IconButton
+                    color="inherit"
+                    onClick={() => setStatisticModalOpen(true)}
+                    title="Statistics"
+                >
                     <BarChart />
                 </IconButton>
                 <IconButton
@@ -222,43 +268,124 @@ export default function App() {
                 >
                     <Share />
                 </IconButton>
-                <LinkButton href="https://github.com/Starwort/tangleword" title="View on GitHub">
-                    <GitHub />
-                </LinkButton>
             </Toolbar>
         </AppBar>
         <Toolbar />
-        <main>
-            <Show when={error()}>
-                <Alert severity="error">{error()}</Alert>
+        <Drawer
+            variant={drawerIsPersistent() ? 'persistent' : 'temporary'}
+            open={drawerIsPersistent() ? persistentDrawerOpen() : temporaryDrawerOpen()}
+            onClose={() => setTemporaryDrawerOpen(false)}
+            PaperProps={{sx: {width: 240}}}
+        >
+            <Show when={drawerIsPersistent()}>
+                <Toolbar />
             </Show>
-            <Show
-                when={!data.loading}
-                fallback={<Box sx={{
-                    width: "100%",
-                    display: "flex",
-                    flexDirection: 'column',
-                    alignItems: "center",
-                    paddingTop: 16,
-                }}>
-                    <CircularProgress variant="indeterminate" />
-                </Box>}
-            >
-                <PuzzleView
-                    data={data()!}
-                    setError={setError}
-                    onComplete={() => {
-                        if (data.latest!.isDaily) {
-                            setDailiesSolved(dailiesSolved => dailiesSolved + 1);
-                            setLastDailySolved(data.latest!.randomSeed);
-                            setDailyStreak(dailyStreak => dailyStreak + 1);
-                            setStatisticModalOpen(true);
-                        }
-                    }}
-                    isCustomPuzzle={!data()!.generatedFromSeed}
-                />
-            </Show>
-        </main>
+            <List>
+                <ListItem disablePadding>
+                    <ListItemButton
+                        component="a"
+                        href={window.location.href.split("?")[0]}
+                        selected={data.latest?.isDaily}
+                    >
+                        <ListItemIcon>
+                            <CalendarToday />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Daily Puzzle"
+                            secondary={lastDailySolved() == Math.floor(new Date() as any / 8.64e7) ? `Next in ${formatTime(timeUntilNextDaily())}` : "Unsolved"}
+                        />
+                    </ListItemButton>
+                </ListItem>
+                {/* todo: custom puzzles */}
+            </List>
+            <div style={{"flex-grow": 1}} />
+            <List>
+                <ListItem disablePadding>
+                    <ListItemButton
+                        component="a"
+                        href="https://ko-fi.com/starwort"
+                    >
+                        <ListItemIcon>
+                            <Heart />
+                        </ListItemIcon>
+                        <ListItemText primary="Donate" />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton
+                        component="a"
+                        href="https://github.com/Starwort/tangleword/"
+                    >
+                        <ListItemIcon>
+                            <GitHub />
+                        </ListItemIcon>
+                        <ListItemText primary="Repository" />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton
+                        onClick={() => setThemeColour(
+                            themeColour => themeColour == "dark"
+                                ? "light" : "dark"
+                        )}
+                    >
+                        <ListItemIcon>
+                            <Show when={themeColour() == "dark"} fallback={<DarkMode />}>
+                                <LightMode />
+                            </Show>
+                        </ListItemIcon>
+                        <ListItemText
+                            primary={themeColour() == "dark"
+                                ? "Light theme" : "Dark theme"}
+                        />
+                    </ListItemButton>
+                </ListItem>
+            </List>
+        </Drawer>
+        <Box
+            style={{
+                transition: "margin-left 225ms cubic-bezier(0, 0, 0.2, 1)",
+                "margin-left": drawerIsPersistent() && persistentDrawerOpen() ? '240px' : '0px',
+            }}
+            onTransitionStart={() => {
+                needAnimationFrame = true;
+                runUpdateLines();
+            }}
+            onTransitionEnd={() => needAnimationFrame = false}
+        >
+            <main>
+                <Show
+                    when={!data.loading}
+                    fallback={<Box sx={{
+                        width: "100%",
+                        display: "flex",
+                        flexDirection: 'column',
+                        alignItems: "center",
+                        paddingTop: 16,
+                    }}>
+                        <CircularProgress variant="indeterminate" />
+                    </Box>}
+                >
+                    <PuzzleView
+                        ref={updateLines!}
+                        data={data()!}
+                        setError={(e) => {
+                            setError(e);
+                            setErrorModalOpen(true);
+                        }}
+                        onComplete={() => {
+                            if (data.latest!.isDaily) {
+                                setDailiesSolved(dailiesSolved => dailiesSolved + 1);
+                                setLastDailySolved(data.latest!.randomSeed);
+                                setDailyStreak(dailyStreak => dailyStreak + 1);
+                                setStatisticModalOpen(true);
+                            }
+                        }}
+                        isCustomPuzzle={!data()!.generatedFromSeed}
+                    />
+                </Show>
+            </main>
+        </Box>
     </ThemeProvider>;
 }
 

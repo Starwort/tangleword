@@ -1,6 +1,6 @@
 import {Alert, Box, useMediaQuery, useTheme} from '@suid/material';
 import LeaderLine from 'leader-line-new';
-import {JSX, Show, createEffect, createMemo, createSignal, onCleanup} from 'solid-js';
+import {Show, createEffect, createMemo, createSignal, onCleanup, onMount} from 'solid-js';
 import {COLOURS} from './colours';
 import {PuzzleData, serialise, validatePuzzleSolution} from './puzzle_generator';
 import {REVERSE_DICTIONARY} from './reverse_dictionary';
@@ -13,30 +13,28 @@ function shiftFocus(by = 1) {
     const next = inputs[(thisInput + by + inputs.length) % inputs.length];
     next?.focus();
 }
-function makeKeyEventHandler(i: number): JSX.EventHandler<HTMLInputElement, KeyboardEvent> {
-    return (event) => {
-        if (event.key === 'Unidentified') return; // doesn't work on mobile
-        if (event.isComposing || event.keyCode === 229) return;
-        if (event.key === 'Delete') {
-            if ((event.target as HTMLInputElement).value.length === 0) {
-                shiftFocus();
-            }
-            return;
-        }
-        if (event.key === 'Backspace') {
-            if ((event.target as HTMLInputElement).value.length === 0) {
-                shiftFocus(-1);
-            }
-            return;
-        }
-        if (event.key === 'Left' || event.key === 'ArrowLeft') {
-            shiftFocus(-1);
-            return;
-        } else if (event.key === 'Right' || event.key === 'ArrowRight') {
+function keyEventHandler(i: number, event: KeyboardEvent) {
+    if (event.key === 'Unidentified') return; // doesn't work on mobile
+    if (event.isComposing || event.keyCode === 229) return;
+    if (event.key === 'Delete') {
+        if ((event.target as HTMLInputElement).value.length === 0) {
             shiftFocus();
-            return;
         }
-    };
+        return;
+    }
+    if (event.key === 'Backspace') {
+        if ((event.target as HTMLInputElement).value.length === 0) {
+            shiftFocus(-1);
+        }
+        return;
+    }
+    if (event.key === 'Left' || event.key === 'ArrowLeft') {
+        shiftFocus(-1);
+        return;
+    } else if (event.key === 'Right' || event.key === 'ArrowRight') {
+        shiftFocus();
+        return;
+    }
 }
 
 function getUnique(vals: string[]): string {
@@ -77,6 +75,7 @@ interface PuzzleViewProps {
     setError: (error: string) => void;
     isCustomPuzzle: boolean;
     onComplete: () => void;
+    ref: (updateLines: () => void) => void;
 }
 export function PuzzleView(props: PuzzleViewProps) {
     let saveSlot = props.data.isDaily ? props.data.randomSeed.toString() : serialise(props.data);
@@ -105,7 +104,7 @@ export function PuzzleView(props: PuzzleViewProps) {
         window.localStorage[saveSlot] = JSON.stringify(inputValues());
     });
     const output = (i: number) => getUnique(inputValues()[i]);
-    const makeInputInputEventHandler = (clue: number, letter: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
+    const inputInputEventHandler = ([clue, letter]: [number, number], event: InputEvent) => {
         let value = event.data ?? '';
         if (!/^[a-zA-Z]$/.test(value)) {
             value = '';
@@ -118,7 +117,7 @@ export function PuzzleView(props: PuzzleViewProps) {
             shiftFocus();
         }
     };
-    const makeOutputInputEventHandler = (i: number): JSX.InputEventHandler<HTMLInputElement, InputEvent> => (event) => {
+    const outputInputEventHandler = (i: number, event: InputEvent) => {
         let value = event.data ?? '';
         setInputValues(inputValues => {
             for (let j = 0; j < props.data.clues.length; j++) {
@@ -135,8 +134,8 @@ export function PuzzleView(props: PuzzleViewProps) {
         for (let letter = 0; letter < props.data.outputCount; letter++) {
             let input: Element = <input
                 value={output(letter)}
-                onKeyDown={makeKeyEventHandler(letter)}
-                onInput={makeOutputInputEventHandler(letter)}
+                onKeyDown={[keyEventHandler, letter]}
+                onInput={[outputInputEventHandler, letter]}
                 style={{color: output(letter) == '!' ? 'red' : undefined}}
                 onFocus={e => e.target.setSelectionRange(0, e.target.value.length)}
                 onKeyUp={e => (
@@ -150,7 +149,7 @@ export function PuzzleView(props: PuzzleViewProps) {
         }
         return outputs;
     });
-    const inputs = createMemo((): Element[] => {
+    const inputs = createMemo(() => {
         let inputs = [];
         for (let clue = 0; clue < Object.keys(props.data.arrows).length; clue++) {
             let targets = props.data.arrows[clue];
@@ -163,68 +162,78 @@ export function PuzzleView(props: PuzzleViewProps) {
                     <Clue
                         clue={props.data.clues[clue]}
                         letters={targets.map(letter => inputValues()[letter][clue] || output(letter))}
-                        isCustomPuzzle={props.isCustomPuzzle}
-                    />
+                        isCustomPuzzle={props.isCustomPuzzle} />
                     <div class="row">
                         {targets.map(letter => <input
                             value={inputValues()[letter][clue]}
                             placeholder={output(letter)}
-                            onKeyDown={makeKeyEventHandler(letter)}
-                            onInput={makeInputInputEventHandler(clue, letter)}
+                            onKeyDown={[keyEventHandler, letter]}
+                            onInput={[inputInputEventHandler, [clue, letter]]}
                             style={{color: output(letter) == '!' ? 'red' : undefined}}
                             onFocus={e => e.target.setSelectionRange(0, e.target.value.length)}
                             onKeyUp={e => (
                                 e.target as HTMLInputElement
                             ).setSelectionRange(
                                 0,
-                                (e.target as HTMLInputElement).value.length,
-                            )}
-                        />)}
+                                (e.target as HTMLInputElement).value.length
+                            )} />)}
                     </div>
                 </Box>
             </div>;
-            inputs.push(element as any);
+            inputs.push(element as Element);
         }
         return inputs;
     });
     const theme = useTheme();
-    createEffect((oldLines: LeaderLine[]) => {
-        // subscribe to the signals that draw banners
-        let _ = won();
-        const isLarge = useMediaQuery(theme.breakpoints.up('md'));
+    let lines: [Element, number, LeaderLine][] = [];
+    onMount(() => {
         const inputBoxes = inputs();
         const outputBoxes = outputs();
-        let lines: LeaderLine[] = [];
         let colours = COLOURS[theme.palette.mode];
         for (let i = 0; i < Object.keys(props.data.arrows).length; i++) {
             let targets = props.data.arrows[i];
             for (let target of targets) {
                 let source = inputBoxes[i];
-                if (!isLarge()) {
-                    source = source.querySelector('.row')!;
-                }
-                setTimeout(() => {
-                    lines.push(new LeaderLine(
-                        source, outputBoxes[target],
-                        {
-                            path: 'straight',
-                            endPlug: 'arrow3',
-                            color: colours[i % colours.length],
-                            startSocket: 'right',
-                            endSocket: 'left',
-                        }
-                    ));
-                }, 1);
+                lines.push([source, i, new LeaderLine(
+                    source, outputBoxes[target],
+                    {
+                        path: 'straight',
+                        endPlug: 'arrow3',
+                        color: colours[i % colours.length],
+                        startSocket: 'right',
+                        endSocket: 'left',
+                    }
+                )]);
             }
         }
-        onCleanup(() => {
-            for (let line of lines) {
-                line.hide();
-                line.remove();
+    });
+    createEffect(() => {
+        let isLarge = useMediaQuery(theme.breakpoints.up('md'))();
+        // reposition the lines when the window is resized beyond the breakpoint
+        for (let [source, _, line] of lines) {
+            line.start = isLarge
+                ? source
+                // get the input box
+                : source.querySelector('.row')!;
+        }
+    });
+    createEffect(() => {
+        const theme = useTheme();
+        let colours = COLOURS[theme.palette.mode];
+        setTimeout(() => {
+            for (let [_, i, line] of lines) {
+                line.color = colours[i % colours.length];
             }
-        });
-        return lines;
-    }, []);
+        }, 0);
+    });
+    onCleanup(() => {
+        while (lines.length > 0) {
+            let [_, __, line] = lines.pop()!;
+            line.hide();
+            line.remove();
+        }
+    });
+    props.ref(() => lines.forEach(([_, __, line]) => line.position()));
     const [won, setWon] = createSignal(window.localStorage[saveSlot + 'won'] === 'true');
     createEffect(() => {
         if (validatePuzzleSolution(
@@ -240,7 +249,7 @@ export function PuzzleView(props: PuzzleViewProps) {
     const shouldTransform = useMediaQuery(theme.breakpoints.up('md'));
     return <>
         <Show when={won()}>
-            <Alert severity="success">You have completed this puzzle!</Alert>
+            <Alert sx={{mb: 1}} severity="success">You have completed this puzzle!</Alert>
         </Show>
         <div class="puzzle">
             <div class="column">
@@ -252,7 +261,7 @@ export function PuzzleView(props: PuzzleViewProps) {
             </div>
         </div>
         <div class="alt-puzzle-view" style={{
-            transform: shouldTransform() ? undefined : 'scale(0.75)',
+            transform: shouldTransform() ? undefined : 'scale(0.66)',
         }}>
             <div class="column">
                 {props.data.clues.map(clue => <div class="clue">
@@ -268,8 +277,8 @@ export function PuzzleView(props: PuzzleViewProps) {
                                 <input
                                     value={inputValues()[letter][clueIdx]}
                                     placeholder={output(letter)}
-                                    onKeyDown={makeKeyEventHandler(letter)}
-                                    onInput={makeInputInputEventHandler(clueIdx, letter)}
+                                    onKeyDown={[keyEventHandler, letter]}
+                                    onInput={[inputInputEventHandler, [clueIdx, letter]]}
                                     style={{color: output(letter) == '!' ? 'red' : undefined}}
                                     onFocus={e => e.target.setSelectionRange(0, e.target.value.length)}
                                     onKeyUp={e => (
