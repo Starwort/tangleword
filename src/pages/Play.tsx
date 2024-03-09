@@ -115,7 +115,7 @@ export function Play(props: PageProps<{
                         <IconButton
                             color="inherit"
                             onClick={() => {
-                                const urlObj = new URL(window.location.pathname);
+                                const urlObj = new URL(location.origin + location.pathname);
                                 if (data.latest!.generatedFromSeed) {
                                     urlObj.searchParams.set("seed", data.latest!.randomSeed.toString());
                                 } else {
