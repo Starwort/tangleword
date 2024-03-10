@@ -1,4 +1,4 @@
-import {CalendarToday, DarkMode, Favorite as Heart, InfoOutlined, LightMode, Menu as MenuIcon} from "@suid/icons-material";
+import {CalendarToday, Construction, DarkMode, Favorite as Heart, InfoOutlined, LightMode, Menu as MenuIcon} from "@suid/icons-material";
 import ListIcon from "@suid/icons-material/List";
 import {AppBar, Box, Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ThemeProvider, Toolbar, Typography, createPalette, createTheme, useMediaQuery} from "@suid/material";
 import {JSXElement, Match, Show, Switch, createEffect, createMemo, createSignal, onCleanup} from "solid-js";
@@ -6,6 +6,7 @@ import "./App.scss";
 import {GitHub, Kofi} from "./extra_icons";
 import {CustomPuzzles} from "./pages/CustomPuzzles";
 import {Play} from "./pages/Play";
+import {PuzzleDesigner} from "./pages/PuzzleDesigner";
 import {formatTime, loadNumFromStorage} from "./util";
 
 export default function App() {
@@ -71,7 +72,9 @@ export default function App() {
     const [page, _setPage] = createSignal(query.get("page") ?? "play");
     function setPage(pageId: string, urlParams?: string) {
         window.history.pushState(null, "", window.location.pathname + (urlParams ? '?' + urlParams : ''));
-        setExtraButtons([]);
+        if (pageId != page()) {
+            setExtraButtons([]);
+        }
         _setPage(pageId);
     }
 
@@ -198,6 +201,24 @@ export default function App() {
                         />
                     </ListItemButton>
                 </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton
+                        component="a"
+                        href={window.location.pathname + '?page=designer'}
+                        onClick={event => {
+                            event.preventDefault();
+                            setPage("designer", "page=designer");
+                            setTemporaryDrawerOpen(false);
+                        }}
+                    >
+                        <ListItemIcon>
+                            <Construction />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Puzzle Designer"
+                        />
+                    </ListItemButton>
+                </ListItem>
             </List>
             <div style={{"flex-grow": 1}} />
             <List>
@@ -272,6 +293,16 @@ export default function App() {
                         <CustomPuzzles
                             setError={setError}
                             setPage={setPage}
+                        />
+                    </Match>
+                    <Match when={page() == "designer"}>
+                        <PuzzleDesigner
+                            setError={setError}
+                            setPage={setPage}
+                            ref={data => {
+                                updateAnimationFrame = data.updateAnimationFrame;
+                                setExtraButtons(data.toolbarButtons);
+                            }}
                         />
                     </Match>
                 </Switch>

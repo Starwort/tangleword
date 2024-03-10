@@ -1,7 +1,7 @@
 import {BarChart, Share} from "@suid/icons-material";
 import {Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography} from "@suid/material";
 import {JSXElement, Show, createEffect, createResource, createSignal} from "solid-js";
-import {PuzzleView} from "../PuzzleView";
+import {PlayPuzzle} from "../Puzzle";
 import {PuzzleData, generateFullPuzzleFromSeed, puzzleFromString, serialise} from "../puzzle_generator";
 import {loadNumFromStorage} from "../util";
 import {PageProps} from "./PageProps";
@@ -32,7 +32,6 @@ export function Play(props: PageProps<{
             if (query.has("puzzle")) {
                 try {
                     let puzzle = puzzleFromString(query.get("puzzle")!);
-                    console.log("loaded!", puzzle);
                     return resolve(puzzle);
                 } catch (_error) {
                     let error: Error = _error as any;
@@ -42,7 +41,6 @@ export function Play(props: PageProps<{
             }
             setTimeout(() => {
                 let puzzle = generateFullPuzzleFromSeed(randomSeed, isDaily);
-                console.log("generated!", puzzle);
                 resolve(puzzle);
             }, 0);
         });
@@ -101,7 +99,7 @@ export function Play(props: PageProps<{
                 <CircularProgress variant="indeterminate" />
             </Box>}
         >
-            <PuzzleView
+            <PlayPuzzle
                 ref={(updateAnimationFrame) => props.ref({
                     updateAnimationFrame,
                     toolbarButtons: [

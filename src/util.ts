@@ -18,4 +18,12 @@ export function formatTime(millis: number) {
     parts.push((seconds % 60).toString().padStart(2, "0"));
     return parts.join(":");
 }
+export function shiftFocus(by = 1) {
+    const inputs = [...document.querySelectorAll("input:not([disabled])")] as HTMLInputElement[];
+    const thisInput = inputs.findIndex(
+        (e) => e === document.activeElement
+    );
+    const next = inputs[(thisInput + by + inputs.length) % inputs.length];
+    next?.focus();
+}
 
