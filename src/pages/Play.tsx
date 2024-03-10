@@ -1,6 +1,6 @@
 import {BarChart, Share} from "@suid/icons-material";
 import {Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography} from "@suid/material";
-import {JSXElement, Show, createEffect, createResource, createSignal} from "solid-js";
+import {Accessor, JSXElement, Show, createEffect, createResource, createSignal} from "solid-js";
 import {PlayPuzzle} from "../Puzzle";
 import {PuzzleData, generateFullPuzzleFromSeed, puzzleFromString, serialise} from "../puzzle_generator";
 import {loadNumFromStorage} from "../util";
@@ -12,39 +12,42 @@ export function Play(props: PageProps<{
 }> & {
     setLastDailySolved: (value: number) => void;
     lastDailySolved: number;
+    query: Accessor<URLSearchParams>;
 }) {
-    const query = new URLSearchParams(window.location.search);
     const [statisticModalOpen, setStatisticModalOpen] = createSignal(false);
-    const [data] = createResource<PuzzleData>(() => {
-        let randomSeed: number;
-        let isDaily = true;
-        if (query.has("seed")) {
-            randomSeed = parseInt(query.get("seed")!);
-            if (isDaily = isNaN(randomSeed)) {
-                props.setError("Invalid seed");
-                window.history.replaceState(null, "", window.location.pathname);
+    const [data] = createResource<PuzzleData, URLSearchParams>(
+        props.query,
+        (query) => {
+            let randomSeed: number;
+            let isDaily = true;
+            if (query.has("seed")) {
+                randomSeed = parseInt(query.get("seed")!);
+                if (isDaily = isNaN(randomSeed)) {
+                    props.setError("Invalid seed");
+                    window.history.replaceState(null, "", window.location.pathname);
+                    randomSeed = Math.floor(new Date() as any / 8.64e7);
+                }
+            } else {
                 randomSeed = Math.floor(new Date() as any / 8.64e7);
             }
-        } else {
-            randomSeed = Math.floor(new Date() as any / 8.64e7);
-        }
-        return new Promise(resolve => {
-            if (query.has("puzzle")) {
-                try {
-                    let puzzle = puzzleFromString(query.get("puzzle")!);
-                    return resolve(puzzle);
-                } catch (_error) {
-                    let error: Error = _error as any;
-                    props.setError(error.message);
-                    window.history.replaceState(null, "", window.location.pathname);
+            return new Promise(resolve => {
+                if (query.has("puzzle")) {
+                    try {
+                        let puzzle = puzzleFromString(query.get("puzzle")!);
+                        return resolve(puzzle);
+                    } catch (_error) {
+                        let error: Error = _error as any;
+                        props.setError(error.message);
+                        window.history.replaceState(null, "", window.location.pathname);
+                    }
                 }
-            }
-            setTimeout(() => {
-                let puzzle = generateFullPuzzleFromSeed(randomSeed, isDaily);
-                resolve(puzzle);
-            }, 0);
-        });
-    });
+                setTimeout(() => {
+                    let puzzle = generateFullPuzzleFromSeed(randomSeed, isDaily);
+                    resolve(puzzle);
+                }, 0);
+            });
+        },
+    );
     const [dailiesSolved, setDailiesSolved] = createSignal<number>(
         loadNumFromStorage("dailiesSolved", 0)
     );

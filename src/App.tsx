@@ -10,7 +10,7 @@ import {PuzzleDesigner} from "./pages/PuzzleDesigner";
 import {formatTime, loadNumFromStorage} from "./util";
 
 export default function App() {
-    const query = new URLSearchParams(window.location.search);
+    const [query, setQuery] = createSignal(new URLSearchParams(window.location.search));
     const [error, _setError] = createSignal("");
     function setError(e: string) {
         _setError(e);
@@ -69,12 +69,13 @@ export default function App() {
     });
 
     const [extraButtons, setExtraButtons] = createSignal<JSXElement[]>([]);
-    const [page, _setPage] = createSignal(query.get("page") ?? "play");
+    const [page, _setPage] = createSignal(query().get("page") ?? "play");
     function setPage(pageId: string, urlParams?: string) {
         window.history.pushState(null, "", window.location.pathname + (urlParams ? '?' + urlParams : ''));
         if (pageId != page()) {
             setExtraButtons([]);
         }
+        setQuery(new URLSearchParams(urlParams));
         _setPage(pageId);
     }
 
@@ -287,6 +288,7 @@ export default function App() {
                                 setExtraButtons(data.toolbarButtons);
                             }}
                             setPage={setPage}
+                            query={query}
                         />
                     </Match>
                     <Match when={page() == "custom"}>
