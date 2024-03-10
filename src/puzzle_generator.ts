@@ -45,7 +45,7 @@ function backtrack(clues: string[], arrows: ArrowSets, random: Random, answer: s
     return false;
 }
 
-export function generatePuzzle(arrows: ArrowSets, random: Random): [string[], number, string] {
+function generatePuzzle(arrows: ArrowSets, random: Random): [string[], number, string] {
     const uniqueOutputs = new Set<number>();
     for (const source in arrows) {
         for (const destination of arrows[source]) {
@@ -65,17 +65,24 @@ export function generatePuzzle(arrows: ArrowSets, random: Random): [string[], nu
 
 export function generateFullPuzzleFromSeed(seed: number, isDaily: boolean): PuzzleData {
     const random = makeRandom(seed);
-    const arrows = generateArrowSets(random);
-    const [clues, outputCount, answerHash] = generatePuzzle(arrows, random);
-    return {
-        arrows,
-        clues,
-        outputCount,
-        answerHash,
-        generatedFromSeed: true,
-        randomSeed: seed,
-        isDaily,
-    };
+    let arrows;
+    while (true) {
+        arrows = generateArrowSets(random);
+        try {
+            const [clues, outputCount, answerHash] = generatePuzzle(arrows, random);
+            return {
+                arrows,
+                clues,
+                outputCount,
+                answerHash,
+                generatedFromSeed: true,
+                randomSeed: seed,
+                isDaily,
+            };
+        } catch (error) {
+            console.warn(error);
+        }
+    }
 }
 
 function isSubset<T>(a: Iterable<T>, b: Set<T>): boolean {
