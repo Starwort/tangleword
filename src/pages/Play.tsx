@@ -96,13 +96,15 @@ export function Play(props: PageProps<{
                 ref={(updateAnimationFrame) => props.ref({
                     updateAnimationFrame,
                     toolbarButtons: [
-                        <IconButton
-                            color="inherit"
-                            onClick={() => setStatisticModalOpen(true)}
-                            title="Statistics"
-                        >
-                            <BarChart />
-                        </IconButton>,
+                        <Show when={data.latest?.isDaily}>
+                            <IconButton
+                                color="inherit"
+                                onClick={() => setStatisticModalOpen(true)}
+                                title="Statistics"
+                            >
+                                <BarChart />
+                            </IconButton>
+                        </Show>,
                         <IconButton
                             color="inherit"
                             onClick={() => {
