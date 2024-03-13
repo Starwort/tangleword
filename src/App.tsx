@@ -79,6 +79,11 @@ export default function App() {
         _setPage(pageId);
     }
 
+    window.onpopstate = () => {
+        setQuery(new URLSearchParams(window.location.search));
+        _setPage(query().get("page") ?? "play");
+    };
+
     return <ThemeProvider theme={theme}>
         <CssBaseline />
         <Dialog open={errorModalOpen()} onClose={() => setErrorModalOpen(false)}>
