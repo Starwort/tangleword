@@ -34,5 +34,54 @@ export function generateArrowSets(random: Random): ArrowSets {
         const output = select(availableOutputs, random);
         link(wordToUpdate, output);
     }
-    return arrows;
+    return topologicalSort(arrows);
+}
+
+function isBefore(a: readonly Destination[], b: readonly Destination[]): boolean {
+    return a.every((a, i) => a <= b[i]) && !a.every((a, i) => a == b[i]);
+}
+
+export function topologicalSortOrder(arrows: ArrowSets): Source[] {
+    // edges[destination].includes(source) = (source is before destination)
+    let edges = Object.entries(arrows).map((): Source[] => []);
+    for (let source = 0; source < edges.length; source++) {
+        for (let destination = 0; destination < edges.length; destination++) {
+            if (isBefore(arrows[source], arrows[destination])) {
+                edges[destination].push(source);
+            }
+        }
+    }
+    let unplaced: Source[] = Object.keys(arrows).map(val => +val);
+    let sorted: Source[] = [];
+    // Kahn's algorithm
+    while (unplaced.length > 0) {
+        // Find a clue with no clues before it in partial-order
+        let toPlace = unplaced.findIndex(source => edges[source].length === 0);
+        if (toPlace === -1) {
+            console.error("No topological solution found;", unplaced.length, "nodes left but no earliest node found", edges);
+            return Object.keys(arrows).map(val => +val);
+        }
+        let source = unplaced.splice(toPlace, 1)[0];
+        sorted.push(source);
+        // remove all edges from this source
+        for (let incomingEdges of edges) {
+            let index = incomingEdges.indexOf(source);
+            if (index !== -1) {
+                incomingEdges.splice(index, 1);
+            }
+        }
+    }
+    return sorted;
+}
+
+// Sort the clues in topological order, without mutating the original
+// Not strictly necessary but it makes the clues look nicer in general
+export function topologicalSort(arrows: ArrowSets): ArrowSets {
+    let sorted = topologicalSortOrder(arrows);
+    // Reconstruct the arrows object in topological order
+    let sortedArrows: ArrowSets = {};
+    for (let i = 0; i < sorted.length; i++) {
+        sortedArrows[i] = arrows[sorted[i]];
+    }
+    return sortedArrows;
 }

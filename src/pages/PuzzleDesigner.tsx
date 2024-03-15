@@ -2,7 +2,7 @@ import {Delete, ExpandLess, ExpandMore, Share} from "@suid/icons-material";
 import {Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, useTheme} from "@suid/material";
 import {Index, JSXElement, Show, createRenderEffect, createSignal} from "solid-js";
 import {PuzzleView, keyEventHandler} from "../Puzzle";
-import {Destination, NUM_OUTPUTS, NUM_WORDS} from "../arrow_sets";
+import {Destination, NUM_OUTPUTS, NUM_WORDS, topologicalSortOrder} from "../arrow_sets";
 import {hash, serialise} from "../puzzle_generator";
 import {shiftFocus} from "../util";
 import {PageProps} from "./PageProps";
@@ -158,13 +158,21 @@ export function PuzzleDesigner(props: PageProps<{
                         height: "48px",
                         display: "flex",
                         "justify-content": "center",
-                        "align-items": "center"
+                        "align-items": "center",
+                        gap: "8px"
                     }}>
                         <Button variant="contained" onClick={() => {
                             setClues(clues => [...clues, ""]);
                             setArrows(arrows => [...arrows, []]);
                         }}>
                             Add clue
+                        </Button>
+                        <Button variant="contained" onClick={() => {
+                            let sortOrder = topologicalSortOrder(arrows());
+                            setClues(clues => sortOrder.map(i => clues[i]));
+                            setArrows(arrows => sortOrder.map(i => arrows[i]));
+                        }}>
+                            Sort clues
                         </Button>
                     </div>
                 </div>
