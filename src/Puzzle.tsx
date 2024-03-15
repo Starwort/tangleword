@@ -222,7 +222,7 @@ export function PuzzleView(props: PuzzleViewProps) {
     </>;
 }
 
-export function AltPuzzleView(props: Omit<PuzzleViewProps, "ref"> & {
+export function AltPuzzleView(props: Omit<PuzzleViewProps, "ref" | "updateOutput"> & {
     small: boolean;
 }) {
     const output = (i: number) => getUnique(props.letters[i]);
@@ -317,7 +317,6 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
     }
     const [inputValues, setInputValues] = createSignal<string[][]>(
         savedInputValues,
-        {equals: false}
     );
     createEffect(() => {
         window.localStorage[saveSlot] = JSON.stringify(inputValues());
@@ -346,16 +345,12 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
             arrows={props.data.arrows}
             clues={props.data.clues}
             letters={inputValues()}
-            updateInput={(letter, clue, value) => setInputValues(inputValues => {
-                inputValues[letter][clue] = value;
-                return inputValues;
-            })}
-            updateOutput={(letter, value) => setInputValues(inputValues => {
-                for (let clue = 0; clue < props.data.clues.length; clue++) {
-                    inputValues[letter][clue] = value;
-                }
-                return inputValues;
-            })}
+            updateInput={(letter, clue, value) => setInputValues(inputValues => inputValues.map(
+                (row, i) => i == letter ? row.map((cell, i) => i == clue ? value : cell) : row
+            ))}
+            updateOutput={(letter, value) => setInputValues(inputValues => inputValues.map(
+                (row, i) => i == letter ? row.map(() => value) : row
+            ))}
             isCustomPuzzle={props.isCustomPuzzle}
             ref={(update) => {
                 props.ref(update);
@@ -367,16 +362,9 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
             arrows={props.data.arrows}
             clues={props.data.clues}
             letters={inputValues()}
-            updateInput={(letter, clue, value) => setInputValues(inputValues => {
-                inputValues[letter][clue] = value;
-                return inputValues;
-            })}
-            updateOutput={(letter, value) => setInputValues(inputValues => {
-                for (let clue = 0; clue < props.data.clues.length; clue++) {
-                    inputValues[letter][clue] = value;
-                }
-                return inputValues;
-            })}
+            updateInput={(letter, clue, value) => setInputValues(inputValues => inputValues.map(
+                (row, i) => i == letter ? row.map((cell, i) => i == clue ? value : cell) : row
+            ))}
             isCustomPuzzle={props.isCustomPuzzle}
             small={shouldTransform()}
         />
