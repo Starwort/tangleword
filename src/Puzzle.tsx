@@ -243,16 +243,28 @@ export function AltPuzzleView(props: Omit<PuzzleViewProps, "ref"> & {
             transform: props.small ? undefined : "scale(0.66)",
         }}>
             <div class="column">
-                {props.clues.map(clue => <div class="clue">
-                    {clue}
-                </div>)}
+                <Index each={props.clues}>{clue => (
+                    <div class="clue">
+                        {clue()}
+                    </div>
+                )}</Index>
             </div>
 
             <div>
                 <Index each={props.clues}>{(_, clue) => (
                     <div class="row" style={{gap: ""}}>
                         <Index each={props.letters}>{(row, letter) => (
-                            props.arrows[clue].includes(letter) ?
+                            <Show when={props.arrows[clue].includes(letter)} fallback={
+                                <input
+                                    class="cell"
+                                    disabled
+                                    style={{
+                                        "background-color": theme.palette.mode == "dark"
+                                            ? "transparent"
+                                            : "black"
+                                    }}
+                                />
+                            }>
                                 <input
                                     class="cell"
                                     value={row()[clue]}
@@ -267,15 +279,8 @@ export function AltPuzzleView(props: Omit<PuzzleViewProps, "ref"> & {
                                         0,
                                         (e.target as HTMLInputElement).value.length,
                                     )}
-                                /> : <input
-                                    class="cell"
-                                    disabled
-                                    style={{
-                                        "background-color": theme.palette.mode == "dark"
-                                            ? "transparent"
-                                            : "black"
-                                    }}
                                 />
+                            </Show>
                         )}</Index>
                     </div>
                 )}</Index>
