@@ -1,62 +1,63 @@
-export const EXCLAMATION = 'exclamation';
-export const BODY_PART = 'body part';
-export const EXCELLENT = 'excellent';
-export const VERB = 'verb';
-export const ANNOYANCE = 'annoyance';
-export const TOOL = 'tool';
-export const ANIMAL = 'animal';
-export const TRANSPORT = 'transportation';
-export const FOOD = 'food';
-export const FURNITURE = 'furniture';
-export const PRONOUN = 'pronoun';
-export const LOCATION = 'place';
 export const ADJECTIVE = 'adjective';
-export const CLOTHES = 'clothing';
-export const MALE_NAME = 'male name';
-export const HELP = 'assistance';
-export const FEMALE_NAME = 'female name';
-export const INSECT = 'insect';
+export const AFFIRMATIVE = 'affirmative';
+export const ANIMAL = 'animal';
 export const ANIMAL_NOISE = 'animal noise';
-export const OBJECT = 'object';
-export const FISH = 'fish';
-export const TREE = 'tree';
+export const ANNOYANCE = 'annoyance';
 export const BIRD = 'bird';
-export const ILLNESS = 'illness';
+export const BOAT = 'boat';
+export const BODY_PART = 'body part';
+export const CLOTHES = 'clothing';
+export const COLOUR = 'colour';
+export const COMPUTER_TERM = 'computer term';
 export const COUNTRY = 'country';
 export const CREATURE = 'mythical creature';
-export const MUSIC = 'music';
-export const DRINK = 'drink';
-export const NUMBER = 'number';
-export const UTENSIL = 'utensil';
-export const MOUNTAIN = 'mountain';
-export const BOAT = 'boat';
-export const SNAKE = 'snake';
-export const GEOGRAPHICAL_FEATURE = 'geographical feature';
-export const TIME = 'time';
-export const UNIT = 'unit';
-export const NAME = 'name';
-export const GREEK_LETTER = 'Greek letter';
-export const GOVT_AGENCY = 'government agency';
-export const LETTER = 'letter';
-export const AFFIRMATIVE = 'affirmative';
-export const SHAPE = 'shape';
-export const HESITATION = 'hesitation';
-export const EMOTION = 'emotion';
-export const PERSON = 'person';
-export const MONTH = 'month';
 export const DIRT = 'dirt';
-export const NEGATIVE = 'negative';
-export const POEM = 'poem';
-export const COLOUR = 'colour';
-export const RIVER = 'river';
-export const METAL = 'metal';
+export const DRINK = 'drink';
+export const EMOTION = 'emotion';
+export const EXCELLENT = 'excellent';
+export const EXCLAMATION = 'exclamation';
+export const FEMALE_NAME = 'female name';
+export const FISH = 'fish';
+export const FOOD = 'food';
 export const FUEL = 'fuel';
-export const WEATHER = 'weather';
-export const UNTRUTH = 'untruth';
-export const NOISE = 'noise';
-export const PARENT = 'parent';
-export const COMPUTER_TERM = 'computer term';
+export const FURNITURE = 'furniture';
+export const GEOGRAPHICAL_FEATURE = 'geographical feature';
+export const GOVT_AGENCY = 'government agency';
+export const GREEK_LETTER = 'Greek letter';
+export const HELP = 'assistance';
+export const HESITATION = 'hesitation';
 export const HONORIFIC = 'honorific';
+export const ILLNESS = 'illness';
+export const INSECT = 'insect';
+export const LETTER = 'letter';
+export const LOCATION = 'place';
+export const MALE_NAME = 'male name';
+export const METAL = 'metal';
+export const MONTH = 'month';
+export const MOUNTAIN = 'mountain';
+export const MUSIC = 'music';
+export const NAME = 'name';
+export const NEGATIVE = 'negative';
+export const NOISE = 'noise';
+export const NUMBER = 'number';
+export const OBJECT = 'object';
+export const PARENT = 'parent';
+export const PERSON = 'person';
+export const POEM = 'poem';
+export const PRONOUN = 'pronoun';
+export const RIVER = 'river';
+export const SHAPE = 'shape';
+export const SNAKE = 'snake';
+export const TIME = 'time';
+export const TOOL = 'tool';
+export const TRANSPORT = 'transportation';
+export const TREE = 'tree';
+export const UNIT = 'unit';
+export const UNTRUTH = 'untruth';
+export const UTENSIL = 'utensil';
+export const VERB = 'verb';
+export const WEATHER = 'weather';
+export const WEEKDAY = 'day of the week';
 export const DICTIONARY: [string, string][] = [
     ['aah', EXCLAMATION],
     ['abs', BODY_PART],
@@ -212,6 +213,7 @@ export const DICTIONARY: [string, string][] = [
     ['fog', WEATHER],
     ['fop', PERSON],
     ['fox', ANIMAL],
+    ['fri', WEEKDAY],
     ['fry', VERB],
     ['fur', CLOTHES],
     ['gag', VERB],
@@ -328,6 +330,7 @@ export const DICTIONARY: [string, string][] = [
     ['moa', BIRD],
     ['mog', ANIMAL],
     ['mom', PARENT],
+    ['mon', WEEKDAY],
     ['moo', ANIMAL_NOISE],
     ['mop', TOOL],
     ['mow', VERB],
@@ -394,6 +397,7 @@ export const DICTIONARY: [string, string][] = [
     ['pox', ILLNESS],
     ['pry', VERB],
     ['psi', GREEK_LETTER],
+    ['psi', UNIT],
     ['pub', LOCATION],
     ['pug', ANIMAL],
     ['pup', ANIMAL],
@@ -432,6 +436,7 @@ export const DICTIONARY: [string, string][] = [
     ['sam', NAME],
     ['sap', TREE],
     ['sat', VERB],
+    ['sat', WEEKDAY],
     ['saw', TOOL],
     ['sax', MUSIC],
     ['say', VERB],
@@ -460,12 +465,14 @@ export const DICTIONARY: [string, string][] = [
     ['sty', LOCATION],
     ['sue', FEMALE_NAME],
     ['sum', NUMBER],
-    ['sun', GEOGRAPHICAL_FEATURE],
+    ['sun', WEEKDAY],
+    ['tau', GREEK_LETTER],
     ['tay', RIVER],
     ['tea', DRINK],
     ['ted', MALE_NAME],
     ['tee', OBJECT],
     ['ten', NUMBER],
+    ['thu', WEEKDAY],
     ['thy', PRONOUN],
     ['tie', CLOTHES],
     ['tin', METAL],
@@ -478,6 +485,7 @@ export const DICTIONARY: [string, string][] = [
     ['try', VERB],
     ['tsk', EXCLAMATION],
     ['tub', OBJECT],
+    ['tue', WEEKDAY],
     ['tug', VERB],
     ['tup', ANIMAL],
     ['tut', EXCLAMATION],
@@ -499,6 +507,7 @@ export const DICTIONARY: [string, string][] = [
     ['vie', VERB],
     ['wag', VERB],
     ['was', VERB],
+    ['wed', WEEKDAY],
     ['wet', ADJECTIVE],
     ['who', PRONOUN],
     ['wig', CLOTHES],
