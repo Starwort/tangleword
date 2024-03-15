@@ -6,7 +6,7 @@
     text-transform: uppercase;
     background-color: white;
     border: 1px solid;
-    &:disabled,
+    &:disabled:not(button),
     &.dim {
         background-color: transparent;
         border: 2px solid #7f7f7f;

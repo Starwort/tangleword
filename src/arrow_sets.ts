@@ -4,10 +4,10 @@ export type Source = number;
 export type Destination = number;
 export type ArrowSets = {[key: Source]: readonly Destination[];};
 export type MutArrowSets = {[key: Source]: Destination[];};
+export const NUM_WORDS = 6;
+export const NUM_OUTPUTS = 8;
 
 export function generateArrowSets(random: Random): ArrowSets {
-    const NUM_WORDS = 6;
-    const NUM_OUTPUTS = 8;
     let arrows: MutArrowSets = {};
     for (let i = 0; i < NUM_WORDS; i++) {
         arrows[i] = [];

@@ -64,6 +64,11 @@ function Clue(props: ClueProps) {
     </div>;
 }
 
+interface LineController {
+    (): void;
+    regenerate: () => void;
+}
+
 interface PuzzleViewProps {
     arrows: ArrowSets;
     clues: string[];
@@ -71,7 +76,7 @@ interface PuzzleViewProps {
     updateInput: (letter: number, clue: number, value: string) => void;
     updateOutput: (letter: number, value: string) => void;
     isCustomPuzzle: boolean;
-    ref: (updateLines: () => void) => void;
+    ref: (updateLines: LineController) => void;
 }
 export function PuzzleView(props: PuzzleViewProps) {
     const output = (i: number) => getUnique(props.letters[i]);
@@ -132,7 +137,7 @@ export function PuzzleView(props: PuzzleViewProps) {
                         letters={targets.map(letter => props.letters[letter][clue] || output(letter))}
                         isCustomPuzzle={props.isCustomPuzzle}
                     />
-                    <div class="row">
+                    <div class="row" style={{"min-height": "48px"}}>
                         {targets.map(letter => <input class="cell"
                             value={props.letters[letter][clue]}
                             placeholder={output(letter)}
@@ -159,8 +164,12 @@ export function PuzzleView(props: PuzzleViewProps) {
     createEffect(() => {
         while (lines.length > 0) {
             let [_, __, line] = lines.pop()!;
-            line.hide();
-            line.remove();
+            try {
+                line.hide();
+                line.remove();
+            } catch (e) {
+                console.error(e);
+            }
         }
         const inputBoxes = inputs();
         const outputBoxes = outputs();
@@ -208,7 +217,15 @@ export function PuzzleView(props: PuzzleViewProps) {
             line.remove();
         }
     });
-    props.ref(() => lines.forEach(([_, __, line]) => line.position()));
+    let updateLines: LineController = (() => lines.forEach(([_, __, line]) => line.position())) as any;
+    updateLines.regenerate = () => {
+        for (let [_, __, line] of lines) {
+            line.hide();
+            line.remove();
+        }
+
+    };
+    props.ref(updateLines);
     return <>
         <div class="puzzle">
             <div class="column">
@@ -339,7 +356,7 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
     const shouldTransform = useMediaQuery(theme.breakpoints.up("md"));
     return <>
         <Show when={won()}>
-            <Alert sx={{mb: 1}} severity="success">You have completed this puzzle!</Alert>
+            <Alert sx={{mb: 1}} severity="success" variant="filled">You have completed this puzzle!</Alert>
         </Show>
         <PuzzleView
             arrows={props.data.arrows}
