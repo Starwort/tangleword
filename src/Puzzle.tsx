@@ -207,6 +207,7 @@ export function PuzzleView(props: PuzzleViewProps) {
         setTimeout(() => {
             for (let [_, i, line] of lines) {
                 line.color = colours[i % colours.length];
+                line.position();
             }
         }, 0);
     });
