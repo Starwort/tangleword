@@ -1,0 +1,38 @@
+name: Puzzle submission
+description: Submit custom puzzles here to be included in the Custom Puzzles page
+title: "[Custom puzzle] "
+labels: ["puzzle-submission"]
+assignees:
+  - Starwort
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for playing Tangleword! If you've designed an awesome puzzle, please fill out this form.
+  - type: input
+    id: puzzle-url
+    attributes:
+      label: Puzzle URL
+      description: Provide the share URL of the puzzle here
+      placeholder: https://starwort.github.io/tangleword/?puzzle=...
+    validations:
+      required: true
+  - type: input
+    id: puzzle-attribution
+    attributes:
+      label: Preferred attribution
+      description: How would you like to be credited if your puzzle is added to Tangleword?
+      placeholder: "@YOUR_USERNAME's puzzle"
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: "I understand and agree that:"
+      options:
+        - label: My puzzle will not necessarily be accepted into Tangleword
+          required: true
+        - label: If my puzzle *is* accepted into Tangleword, that my puzzle will remain a part of Tangleword in perpetuity
+          required: true
+        - label: I may, at some point in the future, return to this issue and request that my attribution be modified or removed, as long as the request is made with the same GitHub account
+          required: true
+    validations:
+      required: true

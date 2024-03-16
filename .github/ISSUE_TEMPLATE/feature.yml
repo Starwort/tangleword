@@ -1,0 +1,28 @@
+name: Enhancement request
+description: File your awesome suggestions here
+title: "[Enhancement] "
+labels: ["enhancement"]
+assignees:
+  - Starwort
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for playing Tangleword! If you've had a cool idea, please fill in this form.
+  - type: textarea
+    id: your-great-idea
+    attributes:
+      label: What's your idea?
+      description: How would your idea improve Tangleword?
+      placeholder: What would you improve?
+    validations:
+      required: true
+  - type: dropdown
+    id: will-help
+    attributes:
+      label: Would you be interested in working on this feature?
+      options:
+        - Yeah!
+        - Maybe
+        - Not really
+    validations:
+      required: true

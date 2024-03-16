@@ -1,0 +1,39 @@
+name: Bug Report
+description: File a bug report
+title: "[Bug] "
+labels: ["bug"]
+assignees:
+  - Starwort
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for playing Tangleword! If you've found a bug, please fill in this form.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Also, what did you expect to happen?
+      placeholder: What do you see?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: How do you trigger this bug? Please give clear, step-by-step instructions.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: dropdown
+    id: browsers
+    attributes:
+      label: What browsers are you seeing the problem on?
+      multiple: true
+      options:
+        - Firefox
+        - Chrome
+        - Safari
+        - Microsoft Edge
