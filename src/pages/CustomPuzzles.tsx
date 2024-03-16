@@ -1,11 +1,13 @@
-import {Card, CardHeader, Divider, List, ListItem, ListItemButton, ListItemText, ListSubheader} from "@suid/material";
+import {Check, Launch} from "@suid/icons-material";
+import {Card, CardHeader, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ListSubheader} from "@suid/material";
+import {Show} from "solid-js";
 import {PageProps} from "./PageProps";
 
 const CUSTOM_PUZZLES: Record<string, [string, string][]> = {
     "Tangleword Original": [
-        ["Puzzle 1", "exclamation,0,1,7;hardware,0,3,4;verb,0,4,5;poetic+or+archaic+verb,1,3,6;Egyptian+mother+goddess,2,4,5;French+sea,2,6,7;0017273f203112bf"],
+        ["Puzzle 1", "exclamation,0,1,7;hardware,0,3,4;verb,0,4,5;poetic or archaic verb,1,3,6;Egyptian mother goddess,2,4,5;French sea,2,6,7;0017273f203112bf"],
         ["Puzzle 2", "star,0,1,2;child,0,6,7;exterior,1,3,4;desert,2,3,4;metal,4,5,7;particle,5,6,7;001c5fa874903d96"],
-        ["Puzzle 3", "weekday,0,1,3;person,0,5,7;three+strikes,1,2,4;place,2,3,6;carer,3,5,7;metal,4,6,7;001cc094507d506c"],
+        ["Puzzle 3", "weekday,0,1,3;person,0,5,7;three strikes,1,2,4;place,2,3,6;carer,3,5,7;metal,4,6,7;001cc094507d506c"],
     ],
     "The Guardian": [
         ["Example", "animal,0,3,6;verb,1,3,7;transportation,2,3,4;food,1,5,7;furniture,0,5,6;verb,2,4,7;000d8041d1d221b1"],
@@ -44,12 +46,19 @@ export function CustomPuzzles(props: PageProps) {
                                     props.setPage("play", "puzzle=" + puzzleDesc);
                                 }}
                             >
-                                <ListItemText primary={name} />
+                                <Show
+                                    when={localStorage[puzzleDesc + "won"] == "true"}
+                                    fallback={<ListItemText primary={name} inset />}
+                                >
+                                    <ListItemIcon>
+                                        <Check />
+                                    </ListItemIcon>
+                                    <ListItemText primary={name} />
+                                </Show>
                             </ListItemButton>
                         </ListItem>)}
                     </>
                 ))}
-                <Divider />
                 <ListItemButton
                     component="a"
                     href={window.location.pathname + "?page=designer"}
@@ -58,6 +67,9 @@ export function CustomPuzzles(props: PageProps) {
                         props.setPage("designer");
                     }}
                 >
+                    <ListItemIcon>
+                        <Launch />
+                    </ListItemIcon>
                     <ListItemText primary="Design your own" />
                 </ListItemButton>
             </List>
