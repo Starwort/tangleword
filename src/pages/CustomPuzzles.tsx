@@ -1,10 +1,11 @@
 import {Check, Launch} from "@suid/icons-material";
-import {Card, CardHeader, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ListSubheader} from "@suid/material";
+import {Card, CardHeader, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ListSubheader} from "@suid/material";
 import {Show} from "solid-js";
 import {PageProps} from "./PageProps";
 
 const CUSTOM_PUZZLES: Record<string, [string, string][]> = {
     "Tangleword Original": [
+        ["Special", "colour,0,1,2;bituminous liquid,0,1,8;conjunction,1,2,9;age,2,5,6;place of shelter,4,5,6;star sign,4,5,7;home stone,3,7,8;deity,3,7,9;0016ec4ce5fff257"],
         ["Puzzle 1", "exclamation,0,1,7;hardware,0,3,4;verb,0,4,5;poetic or archaic verb,1,3,6;Egyptian mother goddess,2,4,5;French sea,2,6,7;0017273f203112bf"],
         ["Puzzle 2", "star,0,1,2;child,0,6,7;exterior,1,3,4;desert,2,3,4;metal,4,5,7;particle,5,6,7;001c5fa874903d96"],
         ["Puzzle 3", "weekday,0,1,3;person,0,5,7;three strikes,1,2,4;place,2,3,6;carer,3,5,7;metal,4,6,7;001cc094507d506c"],
