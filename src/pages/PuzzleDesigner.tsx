@@ -1,4 +1,4 @@
-import {Delete, ExpandLess, ExpandMore, Share} from "@suid/icons-material";
+import {Delete, ExpandLess, ExpandMore, Launch, Share} from "@suid/icons-material";
 import {Alert, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, useTheme} from "@suid/material";
 import {Index, JSXElement, Show, createRenderEffect, createSignal} from "solid-js";
 import {PuzzleView, keyEventHandler} from "../Puzzle";
@@ -67,6 +67,16 @@ export function PuzzleDesigner(props: PageProps<{
     });
     const [validationResult, setValidationResult] = createSignal<["success" | "warning" | "error", string, boolean[], boolean[]] | null>(null);
     const [confirmReset, setConfirmReset] = createSignal(false);
+    const url = () => {
+        const urlObj = new URL(location.origin + location.pathname);
+        urlObj.searchParams.set("puzzle", serialise({
+            arrows: arrows(),
+            clues: clues(),
+            answerHash: hash(answer().join("")),
+        }));
+        let url = decodeURIComponent(urlObj.href);
+        return url;
+    };
     return <>
         <Show when={validationResult()}>
             <Alert sx={{mb: 1}} severity={validationResult()![0]} variant="filled">
@@ -98,9 +108,18 @@ export function PuzzleDesigner(props: PageProps<{
             </DialogActions>
         </Dialog>
         <div class="column">
-            <div class="row">
+            <div class="row designer">
                 <Button variant="contained" onClick={() => setConfirmReset(true)}>
-                    Create standard puzzle
+                    Reset to standard puzzle
+                </Button>
+                <Button
+                    variant="contained"
+                    component="a"
+                    href={`https://github.com/Starwort/tangleword/issues/new?assignees=Starwort&labels=puzzle-submission&projects=&template=puzzle.yml&title=%5BCustom+puzzle%5D+&puzzle-url=${encodeURIComponent(url())}`}
+                    target="_blank"
+                    endIcon={<Launch />}
+                >
+                    Submit this puzzle
                 </Button>
             </div>
             <div class="row designer">
@@ -342,20 +361,13 @@ export function PuzzleDesigner(props: PageProps<{
                         <IconButton
                             color="inherit"
                             onClick={() => {
-                                const urlObj = new URL(location.origin + location.pathname);
-                                urlObj.searchParams.set("puzzle", serialise({
-                                    arrows: arrows(),
-                                    clues: clues(),
-                                    answerHash: hash(answer().join("")),
-                                }));
-                                let url = decodeURIComponent(urlObj.href);
                                 if (
                                     "share" in navigator
                                     && (!("canShare" in navigator) || navigator.canShare({url}))
                                 ) {
-                                    navigator.share({url});
+                                    navigator.share({url: url()});
                                 } else {
-                                    navigator.clipboard.writeText(url);
+                                    navigator.clipboard.writeText(url());
                                 }
                             }}
                             title="Share this puzzle"
