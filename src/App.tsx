@@ -1,5 +1,4 @@
-import {CalendarToday, Construction, DarkMode, Favorite as Heart, InfoOutlined, LightMode, Menu as MenuIcon} from "@suid/icons-material";
-import ListIcon from "@suid/icons-material/List";
+import {CalendarToday, Construction, DarkMode, Favorite as Heart, InfoOutlined, LightMode, List as ListIcon, Menu as MenuIcon} from "@suid/icons-material";
 import {AppBar, Box, Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ThemeProvider, Toolbar, Typography, createPalette, createTheme, useMediaQuery} from "@suid/material";
 import {JSXElement, Match, Show, Switch, createEffect, createMemo, createSignal, onCleanup} from "solid-js";
 import "./App.scss";
