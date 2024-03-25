@@ -135,6 +135,7 @@ export default function App() {
         <AppBar sx={{zIndex: drawerIsPersistent() ? (theme) => theme.zIndex.drawer + 1 : undefined}}>
             <Toolbar sx={{gap: 1}}>
                 <IconButton
+                    edge="start"
                     color="inherit"
                     onClick={() => drawerIsPersistent() ?
                         setPersistentDrawerOpen(open => !open)
@@ -148,14 +149,15 @@ export default function App() {
                 }}>
                     Tangleword
                 </Typography>
+                {extraButtons()}
                 <IconButton
+                    edge="end"
                     color="inherit"
                     onClick={() => setInfoModalOpen(true)}
                     title="About"
                 >
                     <InfoOutlined />
                 </IconButton>
-                {extraButtons()}
             </Toolbar>
         </AppBar>
         <Toolbar />
