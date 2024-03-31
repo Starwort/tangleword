@@ -364,7 +364,7 @@ export const DICTIONARY: [string, string][] = [
     ['lie', UNTRUTH],
     ['lip', BODY_PART],
     ['log', COMPUTER_TERM],
-    ['lot', metal],
+    ['lot', METAL],
     ['low', ADJECTIVE],
     ['lox', FOOD],
     ['mad', EMOTION],
