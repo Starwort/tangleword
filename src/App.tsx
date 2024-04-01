@@ -1,8 +1,9 @@
 import {CalendarToday, Construction, DarkMode, Favorite as Heart, InfoOutlined, LightMode, List as ListIcon, Menu as MenuIcon} from "@suid/icons-material";
-import {AppBar, Box, Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, Link, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ThemeProvider, Toolbar, Typography, createPalette, createTheme, useMediaQuery} from "@suid/material";
+import {AppBar, Box, Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ThemeProvider, Toolbar, Typography, createPalette, createTheme, useMediaQuery} from "@suid/material";
 import {JSXElement, Match, Show, Switch, createEffect, createMemo, createSignal, onCleanup} from "solid-js";
 import "./App.scss";
-import {GitHub, Kofi} from "./extra_icons";
+import {InfoDialogue} from "./InfoDialogue";
+import {GitHub} from "./extra_icons";
 import {CustomPuzzles} from "./pages/CustomPuzzles";
 import {Play} from "./pages/Play";
 import {PuzzleDesigner} from "./pages/PuzzleDesigner";
@@ -94,44 +95,7 @@ export default function App() {
                 <Button onClick={() => setErrorModalOpen(false)}>Ok</Button>
             </DialogActions>
         </Dialog>
-        <Dialog open={infoModalOpen()} onClose={() => setInfoModalOpen(false)}>
-            <DialogTitle>About</DialogTitle>
-            <DialogContent>
-                <Typography>
-                    Tangleword is a word puzzle game, where several crossword-style clues
-                    each point to a vertical column. The answer to each clue is a three-letter
-                    word, made up of the three letters that the clue points to.
-                </Typography>
-                <br />
-                <Typography>
-                    The game is won when all the letters on the right-hand side of the
-                    screen are filled in correctly, without causing any conflicts.
-                </Typography>
-                <br />
-                <Typography>
-                    For convenience, an additional view is provided that shows the
-                    letters in a grid. This may be easier to read for some people.
-                </Typography>
-                <br />
-                <Typography>
-                    This implementation of Tangleword, including the name 'Tangleword',
-                    was created by Starwort, based on the game described in <Link
-                        href="https://www.theguardian.com/science/2024/mar/03/can-you-solve-it-the-word-game-at-the-cutting-edge-of-computer-science"
-                    >Alex Bellos' Guardian article</Link>.
-                </Typography>
-                <Box sx={{display: "flex", justifyContent: "center", gap: 2, paddingTop: 2}}>
-                    <Button href="https://ko-fi.com/starwort" startIcon={<Kofi />} variant="contained">
-                        Support me on Ko-fi
-                    </Button>
-                    <Button href="https://github.com/Starwort/tangleword/" startIcon={<GitHub />} variant="contained">
-                        View source on GitHub
-                    </Button>
-                </Box>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={() => setInfoModalOpen(false)}>Close</Button>
-            </DialogActions>
-        </Dialog>
+        <InfoDialogue open={infoModalOpen()} onClose={() => setInfoModalOpen(false)} />
         <AppBar sx={{zIndex: drawerIsPersistent() ? (theme) => theme.zIndex.drawer + 1 : undefined}}>
             <Toolbar sx={{gap: 1}}>
                 <IconButton
@@ -272,6 +236,7 @@ export default function App() {
             </List>
         </Drawer>
         <Box
+            component="main"
             style={{
                 transition: "margin-left 225ms cubic-bezier(0, 0, 0.2, 1)",
                 "margin-left": drawerIsPersistent() && persistentDrawerOpen() ? '240px' : '0px',
@@ -282,41 +247,38 @@ export default function App() {
             }}
             onTransitionEnd={() => needAnimationFrame = false}
         >
-            <main>
-                <Switch>
-                    <Match when={page() == "play"}>
-                        <Play
-                            setError={setError}
-                            lastDailySolved={lastDailySolved()}
-                            setLastDailySolved={setLastDailySolved}
-                            ref={data => {
-                                updateAnimationFrame = data.updateAnimationFrame;
-                                setExtraButtons(data.toolbarButtons);
-                            }}
-                            setPage={setPage}
-                            query={query}
-                        />
-                    </Match>
-                    <Match when={page() == "custom"}>
-                        <CustomPuzzles
-                            setError={setError}
-                            setPage={setPage}
-                        />
-                    </Match>
-                    <Match when={page() == "designer"}>
-                        <PuzzleDesigner
-                            setError={setError}
-                            setPage={setPage}
-                            ref={data => {
-                                updateAnimationFrame = data.updateAnimationFrame;
-                                setExtraButtons(data.toolbarButtons);
-                            }}
-                        />
-                    </Match>
-                </Switch>
-            </main>
+            <Switch>
+                <Match when={page() == "play"}>
+                    <Play
+                        setError={setError}
+                        lastDailySolved={lastDailySolved()}
+                        setLastDailySolved={setLastDailySolved}
+                        ref={data => {
+                            updateAnimationFrame = data.updateAnimationFrame;
+                            setExtraButtons(data.toolbarButtons);
+                        }}
+                        setPage={setPage}
+                        query={query}
+                    />
+                </Match>
+                <Match when={page() == "custom"}>
+                    <CustomPuzzles
+                        setError={setError}
+                        setPage={setPage}
+                    />
+                </Match>
+                <Match when={page() == "designer"}>
+                    <PuzzleDesigner
+                        setError={setError}
+                        setPage={setPage}
+                        ref={data => {
+                            updateAnimationFrame = data.updateAnimationFrame;
+                            setExtraButtons(data.toolbarButtons);
+                        }}
+                    />
+                </Match>
+            </Switch>
         </Box>
-    </ThemeProvider >;
+    </ThemeProvider>;
 }
-
 
