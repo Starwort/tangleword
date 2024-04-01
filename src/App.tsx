@@ -1,4 +1,4 @@
-import {CalendarToday, Construction, DarkMode, Favorite as Heart, InfoOutlined, LightMode, List as ListIcon, Menu as MenuIcon} from "@suid/icons-material";
+import {CalendarToday, Casino, Construction, DarkMode, Favorite as Heart, InfoOutlined, LightMode, List as ListIcon, Menu as MenuIcon} from "@suid/icons-material";
 import {AppBar, Box, Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ThemeProvider, Toolbar, Typography, createPalette, createTheme, useMediaQuery} from "@suid/material";
 import {JSXElement, Match, Show, Switch, createEffect, createMemo, createSignal, onCleanup} from "solid-js";
 import "./App.scss";
@@ -84,6 +84,13 @@ export default function App() {
         _setPage(query().get("page") ?? "play");
     };
 
+    createEffect(() => {
+        let page = query().get("page");
+        if (page == "random") {
+            setPage("play", `seed=${Math.floor(Math.random() * 1e9)}`);
+        }
+    });
+
     return <ThemeProvider theme={theme}>
         <CssBaseline />
         <Dialog open={errorModalOpen()} onClose={() => setErrorModalOpen(false)}>
@@ -157,7 +164,25 @@ export default function App() {
                 <ListItem disablePadding>
                     <ListItemButton
                         component="a"
-                        href={window.location.pathname + '?page=custom'}
+                        href={window.location.pathname + "?page=random"}
+                        onClick={event => {
+                            event.preventDefault();
+                            setPage("play", `seed=${Math.floor(Math.random() * 1e9)}`);
+                            setTemporaryDrawerOpen(false);
+                        }}
+                    >
+                        <ListItemIcon>
+                            <Casino />
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Random Puzzle"
+                        />
+                    </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton
+                        component="a"
+                        href={window.location.pathname + "?page=custom"}
                         onClick={event => {
                             event.preventDefault();
                             setPage("custom", "page=custom");
@@ -175,7 +200,7 @@ export default function App() {
                 <ListItem disablePadding>
                     <ListItemButton
                         component="a"
-                        href={window.location.pathname + '?page=designer'}
+                        href={window.location.pathname + "?page=designer"}
                         onClick={event => {
                             event.preventDefault();
                             setPage("designer", "page=designer");
