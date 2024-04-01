@@ -1,4 +1,4 @@
-import {Alert, Box, Toolbar, useMediaQuery, useTheme} from "@suid/material";
+import {Alert, Box, Button, Toolbar, useMediaQuery, useTheme} from "@suid/material";
 import LeaderLine from "leader-line-new";
 import {Index, Show, createEffect, createMemo, createSignal, onCleanup} from "solid-js";
 import {ArrowSets} from "./arrow_sets";
@@ -375,7 +375,14 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
                 updateLines = update;
             }}
         />
-        <Toolbar />
+        <Toolbar>
+            <Button
+                onClick={() => setInputValues(values => values.map(row => row.map(() => "")))}
+                variant="contained"
+            >
+                Clear all
+            </Button>
+        </Toolbar>
         <AltPuzzleView
             arrows={props.data.arrows}
             clues={props.data.clues}
