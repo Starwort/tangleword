@@ -1,11 +1,13 @@
 .cell {
     aspect-ratio: 1;
     width: 48px;
+    height: 48px;
     text-align: center;
     font-size: 36px;
     text-transform: uppercase;
     background-color: white;
     border: 1px solid;
+    padding: 4px
     &:disabled:not(button),
     &.dim {
         background-color: transparent;
