@@ -1,4 +1,5 @@
-import {CalendarToday, Casino, Construction, DarkMode, Favorite as Heart, InfoOutlined, LightMode, List as ListIcon, Menu as MenuIcon} from "@suid/icons-material";
+import {CalendarToday, Casino, Construction, DarkMode, Favorite as Heart, InfoOutlined, LightMode, List as ListIcon, Menu as MenuIcon, Toc, ViewAgenda, ViewComfy as ViewCompact} from "@suid/icons-material";
+// ^ `ViewComfy as ViewCompact` is a workaround for https://github.com/swordev/suid/issues/291
 import {AppBar, Box, Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ThemeProvider, Toolbar, Typography, createPalette, createTheme, useMediaQuery} from "@suid/material";
 import {JSXElement, Match, Show, Switch, createEffect, createMemo, createSignal, onCleanup} from "solid-js";
 import "./App.scss";
@@ -16,6 +17,12 @@ export default function App() {
         _setError(e);
         setErrorModalOpen(true);
     }
+    const [preferredView, setPreferredView] = createSignal<"classic" | "alt" | "both" | undefined>((
+        {classic: "classic", alt: "alt", both: "both"} as Record<string, "classic" | "alt" | "both" | undefined>
+    )[window.localStorage.preferredView]);
+    createEffect(() => {
+        window.localStorage.preferredView = preferredView();
+    });
     const [themeColour, setThemeColour] = createSignal<"dark" | "light">(
         window.localStorage.theme === "light" ? "light" : "dark"
     );
@@ -258,6 +265,41 @@ export default function App() {
                         />
                     </ListItemButton>
                 </ListItem>
+                <ListItem disablePadding>
+                    <ListItemButton
+                        onClick={() => setPreferredView(
+                            preferredView => ({
+                                classic: "alt",
+                                alt: "both",
+                                both: "classic",
+                                undefined: "alt"
+                            } as const)[preferredView as string]
+                        )}
+                    >
+                        <ListItemIcon>
+                            <Switch>
+                                <Match when={preferredView() == "classic" || preferredView() == undefined}>
+                                    <Toc />
+                                </Match>
+                                <Match when={preferredView() == "alt"}>
+                                    <ViewCompact />
+                                </Match>
+                                <Match when={preferredView() == "both"}>
+                                    <ViewAgenda />
+                                </Match>
+                            </Switch>
+                        </ListItemIcon>
+                        <ListItemText
+                            primary="Preferred view"
+                            secondary={{
+                                classic: "Classic",
+                                alt: "Grid",
+                                both: "Both",
+                                undefined: "Unset"
+                            }[preferredView() as string]}
+                        />
+                    </ListItemButton>
+                </ListItem>
             </List>
         </Drawer>
         <Box
@@ -284,6 +326,7 @@ export default function App() {
                         }}
                         setPage={setPage}
                         query={query}
+                        preferredView={preferredView()}
                     />
                 </Match>
                 <Match when={page() == "custom"}>
@@ -304,6 +347,6 @@ export default function App() {
                 </Match>
             </Switch>
         </Box>
-    </ThemeProvider>;
+    </ThemeProvider >;
 }
 

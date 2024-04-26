@@ -1,4 +1,4 @@
-import {Alert, Box, Button, Toolbar, useMediaQuery, useTheme} from "@suid/material";
+import {Alert, Box, Button, Toolbar, Typography, useMediaQuery, useTheme} from "@suid/material";
 import LeaderLine from "leader-line-new";
 import {Index, Show, createEffect, createMemo, createSignal, onCleanup} from "solid-js";
 import {ArrowSets} from "./arrow_sets";
@@ -311,6 +311,7 @@ interface PlayPuzzleProps {
     data: PuzzleData;
     setError: (error: string) => void;
     isCustomPuzzle: boolean;
+    preferredView: "classic" | "alt" | "both" | undefined;
     onComplete: () => void;
     ref: (updateLines: () => void) => void;
 }
@@ -359,22 +360,38 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
         <Show when={won()}>
             <Alert sx={{mb: 1}} severity="success" variant="filled">You have completed this puzzle!</Alert>
         </Show>
-        <PuzzleView
-            arrows={props.data.arrows}
-            clues={props.data.clues}
-            letters={inputValues()}
-            updateInput={(letter, clue, value) => setInputValues(inputValues => inputValues.map(
-                (row, i) => i == letter ? row.map((cell, i) => i == clue ? value : cell) : row
-            ))}
-            updateOutput={(letter, value) => setInputValues(inputValues => inputValues.map(
-                (row, i) => i == letter ? row.map(() => value) : row
-            ))}
-            isCustomPuzzle={props.isCustomPuzzle}
-            ref={(update) => {
-                props.ref(update);
-                updateLines = update;
-            }}
-        />
+        <Show when={props.preferredView !== "alt"}>
+            <PuzzleView
+                arrows={props.data.arrows}
+                clues={props.data.clues}
+                letters={inputValues()}
+                updateInput={(letter, clue, value) => setInputValues(inputValues => inputValues.map(
+                    (row, i) => i == letter ? row.map((cell, i) => i == clue ? value : cell) : row
+                ))}
+                updateOutput={(letter, value) => setInputValues(inputValues => inputValues.map(
+                    (row, i) => i == letter ? row.map(() => value) : row
+                ))}
+                isCustomPuzzle={props.isCustomPuzzle}
+                ref={(update) => {
+                    props.ref(update);
+                    updateLines = update;
+                }}
+            />
+        </Show>
+        <Show when={props.preferredView === "alt"}>
+            <AltPuzzleView
+                arrows={props.data.arrows}
+                clues={props.data.clues}
+                letters={inputValues()}
+                updateInput={(letter, clue, value) => setInputValues(inputValues => inputValues.map(
+                    (row, i) => i == letter ? row.map((cell, i) => i == clue ? value : cell) : row
+                ))}
+                isCustomPuzzle={props.isCustomPuzzle}
+                small={shouldTransform()}
+            />
+            {/* necessary to prevent top bar buttons from breaking: */}
+            {void props.ref(() => {})}
+        </Show>
         <Toolbar>
             <Button
                 onClick={() => setInputValues(values => values.map(row => row.map(() => "")))}
@@ -383,16 +400,23 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
                 Clear all
             </Button>
         </Toolbar>
-        <AltPuzzleView
-            arrows={props.data.arrows}
-            clues={props.data.clues}
-            letters={inputValues()}
-            updateInput={(letter, clue, value) => setInputValues(inputValues => inputValues.map(
-                (row, i) => i == letter ? row.map((cell, i) => i == clue ? value : cell) : row
-            ))}
-            isCustomPuzzle={props.isCustomPuzzle}
-            small={shouldTransform()}
-        />
+        <Show when={props.preferredView === undefined}>
+            <Typography variant="caption" sx={{mt: 1}} color="GrayText" fontStyle="italic">
+                Looking for the grid view? Try changing your puzzle view in the menu.
+            </Typography>
+        </Show>
+        <Show when={props.preferredView === "both"}>
+            <AltPuzzleView
+                arrows={props.data.arrows}
+                clues={props.data.clues}
+                letters={inputValues()}
+                updateInput={(letter, clue, value) => setInputValues(inputValues => inputValues.map(
+                    (row, i) => i == letter ? row.map((cell, i) => i == clue ? value : cell) : row
+                ))}
+                isCustomPuzzle={props.isCustomPuzzle}
+                small={shouldTransform()}
+            />
+        </Show>
     </>;
 }
 

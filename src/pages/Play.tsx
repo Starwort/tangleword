@@ -13,6 +13,7 @@ export function Play(props: PageProps<{
     updateAnimationFrame: () => void;
     toolbarButtons: JSXElement[];
 }> & {
+    preferredView: "classic" | "alt" | "both" | undefined;
     setLastDailySolved: (value: number) => void;
     lastDailySolved: number;
     query: Accessor<URLSearchParams>;
@@ -142,6 +143,7 @@ export function Play(props: PageProps<{
                     }
                 }}
                 isCustomPuzzle={!data()!.generatedFromSeed}
+                preferredView={props.preferredView}
             />
         </Show>
     </>;
