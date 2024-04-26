@@ -30,6 +30,7 @@ export const FURNITURE = 'furniture';
 export const GEOGRAPHICAL_FEATURE = 'geographical feature';
 export const GOVT_AGENCY = 'government agency';
 export const GREEK_LETTER = 'Greek letter';
+export const HARDWARE = 'computer hardware';
 export const HELP = 'assistance';
 export const HESITATION = 'hesitation';
 export const HONORIFIC = 'honorific';
@@ -99,6 +100,7 @@ export const DICTIONARY: [string, string][] = [
     ['arf', ANIMAL_NOISE],
     ['ark', BOAT],
     ['arm', BODY_PART],
+    ['arr', EXCLAMATION],
     ['art', TLD],
     ['ash', TREE],
     ['ask', VERB],
@@ -172,6 +174,7 @@ export const DICTIONARY: [string, string][] = [
     ['cot', FURNITURE],
     ['cow', ANIMAL],
     ['coy', ADJECTIVE],
+    ['cpu', HARDWARE],
     ['cry', VERB],
     ['cub', ANIMAL],
     ['cue', VERB],
@@ -331,7 +334,10 @@ export const DICTIONARY: [string, string][] = [
     ['jar', UTENSIL],
     ['jaw', BODY_PART],
     ['jay', BIRD],
+    ['jay', MALE_NAME],
     ['jig', VERB],
+    ['jig', DANCE],
+    ['jim', MALE_NAME],
     ['jin', CREATURE],
     ['job', MALE_NAME],
     ['joe', MALE_NAME],
@@ -345,6 +351,7 @@ export const DICTIONARY: [string, string][] = [
     ['kea', BIRD],
     ['keg', OBJECT],
     ['ken', MALE_NAME],
+    ['key', HARDWARE],
     ['khi', GREEK_LETTER],
     ['kid', PERSON],
     ['kip', SLEEP],
@@ -364,6 +371,7 @@ export const DICTIONARY: [string, string][] = [
     ['lie', UNTRUTH],
     ['lip', BODY_PART],
     ['log', COMPUTER_TERM],
+    ['log', TREE],
     ['lot', METAL],
     ['low', ADJECTIVE],
     ['lox', FOOD],
@@ -468,11 +476,13 @@ export const DICTIONARY: [string, string][] = [
     ['pry', VERB],
     ['psi', GREEK_LETTER],
     ['psi', UNIT],
+    ['psu', HARDWARE],
     ['pub', LOCATION],
     ['pug', ANIMAL],
     ['pup', ANIMAL],
     ['pus', BODY_PART],
     ['ram', ANIMAL],
+    ['ram', HARDWARE],
     ['ram', VERB],
     ['rap', MUSIC],
     ['rap', VERB],
@@ -539,6 +549,7 @@ export const DICTIONARY: [string, string][] = [
     ['sue', FEMALE_NAME],
     ['sum', NUMBER],
     ['sun', WEEKDAY],
+    ['tan', COLOUR],
     ['tau', GREEK_LETTER],
     ['tay', RIVER],
     ['tea', DRINK],
@@ -557,6 +568,7 @@ export const DICTIONARY: [string, string][] = [
     ['toy', OBJECT],
     ['try', VERB],
     ['tsk', EXCLAMATION],
+    ['tty', COMPUTER_TERM],
     ['tub', OBJECT],
     ['tue', WEEKDAY],
     ['tug', VERB],
@@ -570,6 +582,7 @@ export const DICTIONARY: [string, string][] = [
     ['uni', LOCATION],
     ['urn', OBJECT],
     ['uru', METAL],
+    ['usb', HARDWARE],
     ['use', VERB],
     ['ute', TRANSPORT],
     ['vac', TOOL],
