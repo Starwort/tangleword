@@ -94,6 +94,26 @@ export function Play(props: PageProps<{
             </Box>}
         >
             <PlayPuzzle
+                data={data()!}
+                setError={props.setError}
+                onComplete={() => {
+                    if (data.latest!.isDaily) {
+                        setDailiesSolved(dailiesSolved => dailiesSolved + 1);
+                        props.setLastDailySolved(data.latest!.randomSeed);
+                        setDailyStreak(dailyStreak => dailyStreak + 1);
+                        setStatisticModalOpen(true);
+                    }
+                }}
+                isCustomPuzzle={!data()!.generatedFromSeed}
+                preferredView={props.preferredView}
+                onCheat={data.latest!.isDaily ? () => {
+                    if (!data.latest!.isDaily) {
+                        return;
+                    }
+                    props.setLastDailySolved(data.latest!.randomSeed);
+                    setDailyStreak(0);
+                    setStatisticModalOpen(true);
+                } : undefined}
                 ref={(updateAnimationFrame) => props.ref({
                     updateAnimationFrame,
                     toolbarButtons: [
@@ -132,18 +152,6 @@ export function Play(props: PageProps<{
                         </IconButton>
                     ]
                 })}
-                data={data()!}
-                setError={props.setError}
-                onComplete={() => {
-                    if (data.latest!.isDaily) {
-                        setDailiesSolved(dailiesSolved => dailiesSolved + 1);
-                        props.setLastDailySolved(data.latest!.randomSeed);
-                        setDailyStreak(dailyStreak => dailyStreak + 1);
-                        setStatisticModalOpen(true);
-                    }
-                }}
-                isCustomPuzzle={!data()!.generatedFromSeed}
-                preferredView={props.preferredView}
             />
         </Show>
     </>;

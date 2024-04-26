@@ -1,9 +1,9 @@
-import {Alert, Box, Button, Toolbar, Typography, useMediaQuery, useTheme} from "@suid/material";
+import {Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Toolbar, Typography, useMediaQuery, useTheme} from "@suid/material";
 import LeaderLine from "leader-line-new";
 import {Index, Show, createEffect, createMemo, createSignal, onCleanup} from "solid-js";
 import {ArrowSets} from "./arrow_sets";
 import {COLOURS} from "./colours";
-import {PuzzleData, serialise, validatePuzzleSolution} from "./puzzle_generator";
+import {CHEAT_puzzleAnswerFromSeed, PuzzleData, serialise, validatePuzzleSolution} from "./puzzle_generator";
 import {REVERSE_DICTIONARY} from "./reverse_dictionary";
 import {shiftFocus} from "./util";
 
@@ -307,12 +307,38 @@ export function AltPuzzleView(props: Omit<PuzzleViewProps, "ref" | "updateOutput
     </>;
 }
 
+interface CheatDialogueProps {
+    open: boolean;
+    onClose: (shouldCheat: boolean) => void;
+}
+function CheatDialogue(props: CheatDialogueProps) {
+    return <Dialog open={props.open} onClose={() => props.onClose(false)}>
+        <DialogTitle>Reveal answer?</DialogTitle>
+        <DialogContent>
+            <DialogContentText>
+                Are you sure you want to reveal the answer to this puzzle? This
+                will not count as a completion, and will reset your daily solve
+                streak.
+            </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+            <Button onClick={() => props.onClose(true)} color="error">
+                Solve
+            </Button>
+            <Button onClick={() => props.onClose(false)} color="primary">
+                Cancel
+            </Button>
+        </DialogActions>
+    </Dialog>;
+}
+
 interface PlayPuzzleProps {
     data: PuzzleData;
     setError: (error: string) => void;
     isCustomPuzzle: boolean;
     preferredView: "classic" | "alt" | "both" | undefined;
     onComplete: () => void;
+    onCheat?: () => void;
     ref: (updateLines: () => void) => void;
 }
 export function PlayPuzzle(props: PlayPuzzleProps) {
@@ -342,6 +368,12 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
     });
     const theme = useTheme();
     const [won, setWon] = createSignal(window.localStorage[saveSlot + "won"] === "true");
+    createEffect(() => {
+        if (won()) {
+            window.localStorage[saveSlot + "won"] = "true";
+            setTimeout(() => updateLines?.(), 0);
+        }
+    });
     let updateLines: () => void | undefined;
     createEffect(() => {
         if (validatePuzzleSolution(
@@ -349,14 +381,44 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
             props.data.answerHash,
         ) && !won()) {
             setWon(true);
-            setTimeout(() => updateLines?.(), 0);
             props.onComplete();
-            window.localStorage[saveSlot + "won"] = "true";
         }
     });
 
+    const cheat = () => {
+        if (!props.data.generatedFromSeed) {
+            props.setError("This puzzle cannot be solved automatically");
+            return;
+        }
+        let answer = CHEAT_puzzleAnswerFromSeed(props.data.randomSeed);
+        setWon(true);
+        setInputValues(Array.from(
+            answer,
+            char => Array.from({length: props.data.clues.length}, _ => char)
+        ));
+    };
+
+    const [cheatOpen, setCheatOpen] = createSignal(false);
+
+    const maybeCheat = (shouldCheat: boolean) => {
+        setCheatOpen(false);
+        if (shouldCheat) {
+            props.onCheat!();
+            cheat();
+        }
+    };
+
+    const maybeConfirmCheat = () => {
+        if (won() || !props.data.isDaily) {
+            cheat();
+        } else {
+            setCheatOpen(true);
+        }
+    };
+
     const shouldTransform = useMediaQuery(theme.breakpoints.up("md"));
     return <>
+        <CheatDialogue open={cheatOpen()} onClose={maybeCheat} />
         <Show when={won()}>
             <Alert sx={{mb: 1}} severity="success" variant="filled">You have completed this puzzle!</Alert>
         </Show>
@@ -392,13 +454,22 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
             {/* necessary to prevent top bar buttons from breaking: */}
             {void props.ref(() => {})}
         </Show>
-        <Toolbar>
+        <Toolbar sx={{gap: 2}}>
             <Button
                 onClick={() => setInputValues(values => values.map(row => row.map(() => "")))}
                 variant="contained"
             >
                 Clear all
             </Button>
+            <Show when={props.data.generatedFromSeed}>
+                <Button
+                    onClick={maybeConfirmCheat}
+                    variant="contained"
+                    color={(props.onCheat && !won()) ? "error" : "primary"}
+                >
+                    Reveal answer
+                </Button>
+            </Show>
         </Toolbar>
         <Show when={props.preferredView === undefined}>
             <Typography variant="caption" sx={{mt: 1}} color="GrayText" fontStyle="italic">

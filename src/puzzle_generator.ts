@@ -63,6 +63,24 @@ function generatePuzzle(arrows: ArrowSets, random: Random): [string[], number, s
     return [clues, uniqueOutputs.size, hash(answer.join(""))];
 }
 
+function CHEAT_generateAnswer(arrows: ArrowSets, random: Random): string[] {
+    const uniqueOutputs = new Set<number>();
+    for (const source in arrows) {
+        for (const destination of arrows[source]) {
+            uniqueOutputs.add(destination);
+        }
+    }
+    let clues: string[] = [], answer = Array.from(uniqueOutputs).sort().map(_ => ".");
+    if (!backtrack(clues, arrows, random, answer)) {
+        console.log(arrows, clues, answer);
+        throw new Error("Failed to generate puzzle");
+    }
+    if (answer.includes(".")) {
+        throw new Error("Failed to fill in all outputs");
+    }
+    return answer;
+}
+
 export function generateFullPuzzleFromSeed(seed: number, isDaily: boolean): PuzzleData {
     const random = makeRandom(seed);
     let arrows;
@@ -79,6 +97,19 @@ export function generateFullPuzzleFromSeed(seed: number, isDaily: boolean): Puzz
                 randomSeed: seed,
                 isDaily,
             };
+        } catch (error) {
+            console.warn(error);
+        }
+    }
+}
+
+export function CHEAT_puzzleAnswerFromSeed(seed: number): string[] {
+    const random = makeRandom(seed);
+    let arrows;
+    while (true) {
+        arrows = generateArrowSets(random);
+        try {
+            return CHEAT_generateAnswer(arrows, random);
         } catch (error) {
             console.warn(error);
         }
