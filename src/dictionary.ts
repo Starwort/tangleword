@@ -41,7 +41,7 @@ export const LETTER = 'letter';
 export const LOCATION = 'place';
 export const MALE_NAME = 'male name';
 export const METAL = 'metal';
-export const MONTH = 'month';
+export const MONTH = 'month (abbr.)';
 export const MOUNTAIN = 'mountain';
 export const MUSIC = 'music';
 export const NAME = 'name';
@@ -101,7 +101,6 @@ export const DICTIONARY: [string, string][] = [
     ['ark', BOAT],
     ['arm', BODY_PART],
     ['arr', EXCLAMATION],
-    ['art', TLD],
     ['ash', TREE],
     ['ask', VERB],
     ['asp', SNAKE],
@@ -463,12 +462,12 @@ export const DICTIONARY: [string, string][] = [
     ['pec', BODY_PART],
     ['peg', TOOL],
     ['pen', TOOL],
-    ['pet', ANIMAL],
     ['phi', GREEK_LETTER],
     ['pho', FOOD],
     ['pie', FOOD],
     ['pig', ANIMAL],
     ['poe', PERSON],
+    ['pop', MUSIC],
     ['pop', VERB],
     ['pot', UTENSIL],
     ['pow', NOISE],
@@ -545,6 +544,7 @@ export const DICTIONARY: [string, string][] = [
     ['soy', FOOD],
     ['spa', LOCATION],
     ['spy', PERSON],
+    ['ssl', COMPUTER_TERM],
     ['sty', LOCATION],
     ['sue', FEMALE_NAME],
     ['sum', NUMBER],
@@ -561,6 +561,7 @@ export const DICTIONARY: [string, string][] = [
     ['tie', CLOTHES],
     ['tin', METAL],
     ['tit', BIRD],
+    ['tls', COMPUTER_TERM],
     ['tod', MALE_NAME],
     ['toe', BODY_PART],
     ['tom', MALE_NAME],
