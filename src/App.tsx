@@ -94,7 +94,7 @@ export default function App() {
     createEffect(() => {
         let page = query().get("page");
         if (page == "random") {
-            setPage("play", `seed=${Math.floor(Math.random() * 1e9)}`);
+            setPage("play", `seed=${Math.floor(Math.random() * 9e8 + 1e8)}`);
         }
     });
 
@@ -174,7 +174,7 @@ export default function App() {
                         href={window.location.pathname + "?page=random"}
                         onClick={event => {
                             event.preventDefault();
-                            setPage("play", `seed=${Math.floor(Math.random() * 1e9)}`);
+                            setPage("play", `seed=${Math.floor(Math.random() * 9e8 + 1e8)}`);
                             setTemporaryDrawerOpen(false);
                         }}
                     >
