@@ -4,7 +4,7 @@ import {Index, Show, createEffect, createMemo, createSignal, onCleanup} from "so
 import {ArrowSets} from "./arrow_sets";
 import {COLOURS} from "./colours";
 import {CHEAT_puzzleAnswerFromSeed, PuzzleData, serialise, validatePuzzleSolution} from "./puzzle_generator";
-import {REVERSE_DICTIONARY} from "./reverse_dictionary";
+import {reverseDictionaryFor} from "./reverse_dictionary";
 import {shiftFocus} from "./util";
 
 export function keyEventHandler(event: KeyboardEvent) {
@@ -43,13 +43,13 @@ function getUnique(vals: string[]): string {
 type ClueProps = {
     clue: string;
     letters: string[];
-    isCustomPuzzle: boolean;
+    reverseDictionary?: Record<string, string[]>;
 };
 function Clue(props: ClueProps) {
-    let isValid = () => {
-        if (!props.isCustomPuzzle && !props.letters.some(l => l === "")) {
+    const isValid = () => {
+        if (props.reverseDictionary !== undefined && !props.letters.some(l => l === "")) {
             let word = props.letters.join("");
-            return REVERSE_DICTIONARY[props.clue].includes(word);
+            return props.reverseDictionary[props.clue].includes(word);
         }
         return true;
     };
@@ -75,7 +75,7 @@ interface PuzzleViewProps {
     letters: string[][];
     updateInput: (letter: number, clue: number, value: string) => void;
     updateOutput: (letter: number, value: string) => void;
-    isCustomPuzzle: boolean;
+    puzzleSeed?: number;
     ref: (updateLines: LineController) => void;
 }
 export function PuzzleView(props: PuzzleViewProps) {
@@ -122,6 +122,7 @@ export function PuzzleView(props: PuzzleViewProps) {
         }
         return outputs;
     });
+    const reverseDictionary = createMemo(() => props.puzzleSeed !== undefined ? reverseDictionaryFor(props.puzzleSeed!) : undefined);
     const inputs = createMemo(() => {
         let inputs = [];
         for (let clue = 0; clue < Object.keys(props.arrows).length; clue++) {
@@ -135,7 +136,7 @@ export function PuzzleView(props: PuzzleViewProps) {
                     <Clue
                         clue={props.clues[clue]}
                         letters={targets.map(letter => props.letters[letter][clue] || output(letter))}
-                        isCustomPuzzle={props.isCustomPuzzle}
+                        reverseDictionary={reverseDictionary()}
                     />
                     <div class="row" style={{"min-height": "48px"}}>
                         {targets.map(letter => <input class="cell"
@@ -255,16 +256,19 @@ export function AltPuzzleView(props: Omit<PuzzleViewProps, "ref" | "updateOutput
         }
     };
     const theme = useTheme();
+    const reverseDictionary = createMemo(() => props.puzzleSeed !== undefined ? reverseDictionaryFor(props.puzzleSeed!) : undefined);
 
     return <>
         <div class="alt-puzzle-view" style={{
             transform: props.small ? undefined : "scale(0.66)",
         }}>
             <div class="column">
-                <Index each={props.clues}>{clue => (
-                    <div class="clue">
-                        {clue()}
-                    </div>
+                <Index each={props.clues}>{(clue, index) => (
+                    <Clue
+                        clue={clue()}
+                        letters={props.arrows[index].map(letter => props.letters[letter][index] || output(letter))}
+                        reverseDictionary={reverseDictionary()}
+                    />
                 )}</Index>
             </div>
 
@@ -433,7 +437,7 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
                 updateOutput={(letter, value) => setInputValues(inputValues => inputValues.map(
                     (row, i) => i == letter ? row.map(() => value) : row
                 ))}
-                isCustomPuzzle={props.isCustomPuzzle}
+                puzzleSeed={props.data.generatedFromSeed ? props.data.randomSeed : undefined}
                 ref={(update) => {
                     props.ref(update);
                     updateLines = update;
@@ -448,7 +452,7 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
                 updateInput={(letter, clue, value) => setInputValues(inputValues => inputValues.map(
                     (row, i) => i == letter ? row.map((cell, i) => i == clue ? value : cell) : row
                 ))}
-                isCustomPuzzle={props.isCustomPuzzle}
+                puzzleSeed={props.data.generatedFromSeed ? props.data.randomSeed : undefined}
                 small={shouldTransform()}
             />
             {/* necessary to prevent top bar buttons from breaking: */}
@@ -484,7 +488,7 @@ export function PlayPuzzle(props: PlayPuzzleProps) {
                 updateInput={(letter, clue, value) => setInputValues(inputValues => inputValues.map(
                     (row, i) => i == letter ? row.map((cell, i) => i == clue ? value : cell) : row
                 ))}
-                isCustomPuzzle={props.isCustomPuzzle}
+                puzzleSeed={props.data.generatedFromSeed ? props.data.randomSeed : undefined}
                 small={shouldTransform()}
             />
         </Show>

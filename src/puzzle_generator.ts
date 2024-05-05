@@ -1,5 +1,5 @@
 import {ArrowSets, MutArrowSets, generateArrowSets} from "./arrow_sets";
-import {DICTIONARY} from "./dictionary";
+import {dictionaryFor} from "./dictionary";
 import {Random, makeRandom, shuffle} from "./random";
 
 export function hash(input: string): string {
@@ -17,7 +17,7 @@ export function hash(input: string): string {
     return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(16, "0");
 }
 
-function backtrack(clues: string[], arrows: ArrowSets, random: Random, answer: string[]): boolean {
+function backtrack(dictionary: [string, string][], clues: string[], arrows: ArrowSets, random: Random, answer: string[]): boolean {
     if (clues.length === Object.keys(arrows).length) {
         return true;
     }
@@ -25,7 +25,7 @@ function backtrack(clues: string[], arrows: ArrowSets, random: Random, answer: s
     let targets = arrows[source];
     let origAnswer = targets.map(i => answer[i]).join("");
     let pattern = new RegExp(origAnswer);
-    let options = DICTIONARY.filter(([word, category]) => {
+    let options = dictionary.filter(([word, category]) => {
         return !clues.includes(category) && pattern.test(word);
     });
     shuffle(options, random);
@@ -34,7 +34,7 @@ function backtrack(clues: string[], arrows: ArrowSets, random: Random, answer: s
         for (let i = 0; i < word.length; i++) {
             answer[targets[i]] = word[i];
         }
-        if (backtrack(clues, arrows, random, answer)) {
+        if (backtrack(dictionary, clues, arrows, random, answer)) {
             return true;
         }
         clues.pop();
@@ -45,7 +45,7 @@ function backtrack(clues: string[], arrows: ArrowSets, random: Random, answer: s
     return false;
 }
 
-function generatePuzzle(arrows: ArrowSets, random: Random): [string[], number, string] {
+function generatePuzzle(dictionary: [string, string][], arrows: ArrowSets, random: Random): [string[], number, string] {
     const uniqueOutputs = new Set<number>();
     for (const source in arrows) {
         for (const destination of arrows[source]) {
@@ -53,7 +53,7 @@ function generatePuzzle(arrows: ArrowSets, random: Random): [string[], number, s
         }
     }
     let clues: string[] = [], answer = Array.from(uniqueOutputs).sort().map(_ => ".");
-    if (!backtrack(clues, arrows, random, answer)) {
+    if (!backtrack(dictionary, clues, arrows, random, answer)) {
         console.log(arrows, clues, answer);
         throw new Error("Failed to generate puzzle");
     }
@@ -63,7 +63,7 @@ function generatePuzzle(arrows: ArrowSets, random: Random): [string[], number, s
     return [clues, uniqueOutputs.size, hash(answer.join(""))];
 }
 
-function CHEAT_generateAnswer(arrows: ArrowSets, random: Random): string[] {
+function CHEAT_generateAnswer(dictionary: [string, string][], arrows: ArrowSets, random: Random): string[] {
     const uniqueOutputs = new Set<number>();
     for (const source in arrows) {
         for (const destination of arrows[source]) {
@@ -71,7 +71,7 @@ function CHEAT_generateAnswer(arrows: ArrowSets, random: Random): string[] {
         }
     }
     let clues: string[] = [], answer = Array.from(uniqueOutputs).sort().map(_ => ".");
-    if (!backtrack(clues, arrows, random, answer)) {
+    if (!backtrack(dictionary, clues, arrows, random, answer)) {
         console.log(arrows, clues, answer);
         throw new Error("Failed to generate puzzle");
     }
@@ -82,12 +82,13 @@ function CHEAT_generateAnswer(arrows: ArrowSets, random: Random): string[] {
 }
 
 export function generateFullPuzzleFromSeed(seed: number, isDaily: boolean): PuzzleData {
+    const dictionary = dictionaryFor(seed);
     const random = makeRandom(seed);
     let arrows;
     while (true) {
         arrows = generateArrowSets(random);
         try {
-            const [clues, outputCount, answerHash] = generatePuzzle(arrows, random);
+            const [clues, outputCount, answerHash] = generatePuzzle(dictionary, arrows, random);
             return {
                 arrows,
                 clues,
@@ -104,12 +105,13 @@ export function generateFullPuzzleFromSeed(seed: number, isDaily: boolean): Puzz
 }
 
 export function CHEAT_puzzleAnswerFromSeed(seed: number): string[] {
+    const dictionary = dictionaryFor(seed);
     const random = makeRandom(seed);
     let arrows;
     while (true) {
         arrows = generateArrowSets(random);
         try {
-            return CHEAT_generateAnswer(arrows, random);
+            return CHEAT_generateAnswer(dictionary, arrows, random);
         } catch (error) {
             console.warn(error);
         }
