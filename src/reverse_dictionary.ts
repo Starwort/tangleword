@@ -475,6 +475,16 @@ const HISTORIC_DICTIONARIES: Record<number, Record<string, string[]>> = {
     },
 };
 
+const EXTRA_ALLOWED_WORDS: Record<string, string[]> = {
+    [ANIMAL]: ['ass', 'pet'],
+    [COLOUR]: ['aal'],
+    [FOOD]: ['aal'],
+    [GEOGRAPHICAL_FEATURE]: ['ben'],
+    [LOCATION]: ['alp'],
+    [MOUNTAIN]: ['ben'],
+    [TLD]: ['aaa', 'abb', 'abc', 'aco', 'ads', 'aeg', 'afl', 'aig', 'anz', 'aol', 'app', 'art', 'aws', 'axa', 'bar', 'bbc', 'bbt', 'bcg', 'bet', 'bid', 'bio', 'biz', 'bms', 'bmw', 'bnl', 'bom', 'boo', 'bot', 'box', 'buy', 'bzh', 'cab', 'cal', 'cam', 'car', 'cat', 'cba', 'cbn', 'cbs', 'ceo', 'cfa', 'cfd', 'cpa', 'crs', 'csc', 'dad', 'day', 'dev', 'dhl', 'diy', 'dnp', 'dog', 'dot', 'eat', 'eco', 'esq', 'eus', 'fan', 'fit', 'fly', 'foo', 'fox', 'frl', 'fun', 'fyi', 'gal', 'gap', 'gay', 'gdn', 'gea', 'gle', 'gmo', 'gmx', 'gop', 'hbo', 'hiv', 'hkt', 'hot', 'how', 'ibm', 'ice', 'icu', 'ifm', 'inc', 'ing', 'ink', 'ist', 'itv', 'jcb', 'jcp', 'joy', 'kfh', 'kia', 'kim', 'kpn', 'krd', 'lan', 'lat', 'law', 'lds', 'lol', 'lpl', 'ltd', 'map', 'mba', 'med', 'men', 'mit', 'mlb', 'mma', 'moe', 'moi', 'mom', 'mov', 'msd', 'mtn', 'mtr', 'nba', 'nec', 'new', 'nfl', 'ngo', 'nhk', 'now', 'nra', 'nrw', 'ntt', 'nyc', 'obi', 'one', 'ong', 'onl', 'ooo', 'ovh', 'pay', 'pet', 'pid', 'pin', 'pro', 'pru', 'pub', 'pwc', 'qvc', 'red', 'ren', 'rio', 'rip', 'run', 'rwe', 'sap', 'sbi', 'sbs', 'sca', 'scb', 'ses', 'sew', 'sex', 'sfr', 'ski', 'sky', 'soy', 'spa', 'srl', 'stc', 'tax', 'tdk', 'tel', 'tjx', 'top', 'tui', 'tvs', 'ubs', 'uno', 'uol', 'ups', 'vet', 'vig', 'vin', 'vip', 'wed', 'win', 'wme', 'wowo', 'wtc', 'wtf', 'xin', 'xxx', 'xyz', 'you', 'zip'],
+};
+
 export function reverseDictionaryFor(seed: number): Record<string, string[]> {
     let mostRecentEntry = 19791; // default to the earliest entry; for historic puzzles, use the oldest word list
     for (const start of Object.keys(HISTORIC_DICTIONARIES)) {
@@ -483,5 +493,9 @@ export function reverseDictionaryFor(seed: number): Record<string, string[]> {
             mostRecentEntry = Math.max(parseInt(start), mostRecentEntry);
         }
     }
-    return HISTORIC_DICTIONARIES[mostRecentEntry];
+    let mostRecentDictionary = HISTORIC_DICTIONARIES[mostRecentEntry];
+    for (const [key, extraWords] of Object.entries(EXTRA_ALLOWED_WORDS)) {
+        mostRecentDictionary[key] = mostRecentDictionary[key].concat(extraWords);
+    }
+    return mostRecentDictionary;
 }
