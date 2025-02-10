@@ -352,7 +352,6 @@ export function PuzzleDesigner(props: PageProps<{
             updateOutput={(letter, value) => setAnswer(answer => answer.map(
                 (old, i) => i == letter && value ? value : old)
             )}
-            isCustomPuzzle
             ref={updateAnimationFrame => {
                 updateLines = updateAnimationFrame;
                 props.ref({
@@ -363,7 +362,7 @@ export function PuzzleDesigner(props: PageProps<{
                             onClick={() => {
                                 if (
                                     "share" in navigator
-                                    && (!("canShare" in navigator) || navigator.canShare({url}))
+                                    && (!("canShare" in navigator) || navigator.canShare({url: url()}))
                                 ) {
                                     navigator.share({url: url()});
                                 } else {
