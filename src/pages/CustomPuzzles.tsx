@@ -18,6 +18,7 @@ const CUSTOM_PUZZLES: Record<string, [string, string][]> = {
     ],
     "User-Submitted": [
         ["cheddarmonk's Puzzle", "residue,0,2,6;consumed,0,5,7;receptacle,1,3,4;0 or 1,1,3,5;the cat's mother,2,6,7;generic ordinal,4,5,6;0008741ae4183550"],
+        ["Xtreme Secretary's Puzzle", "Tom+Hanks+Movie,0,1,2;Book+Genre,0,1,4;Roman+or+Greek+Being,2,4,5;US+Presidential+Initials,3,5,7;House+or+Run,3,6,8;Pronoun,4,6,7;Bakery+Item,0,6,8;000344b68e40d4a7"],
     ],
 };
 
